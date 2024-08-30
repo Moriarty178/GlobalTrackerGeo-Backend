@@ -27,7 +27,7 @@ public class DriverLocation {
     private Double speed;
 
     @Column(name = "timestamp")
-    private LocalDateTime timestamp = LocalDateTime.now();
+    private long timestamp;// = LocalDateTime.now();
 
     @Column(name = "recorded_at")
     private LocalDateTime recordedAt;
@@ -72,11 +72,11 @@ public class DriverLocation {
         this.speed = speed;
     }
 
-    public LocalDateTime getTimestamp() {
+    public long getTimestamp() {
         return timestamp;
     }
 
-    public void setTimestamp(LocalDateTime timestamp) {
+    public void setTimestamp(long timestamp) {
         this.timestamp = timestamp;
     }
 
