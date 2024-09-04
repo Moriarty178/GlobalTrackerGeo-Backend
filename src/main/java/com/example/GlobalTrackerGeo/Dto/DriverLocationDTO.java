@@ -1,11 +1,14 @@
 package com.example.GlobalTrackerGeo.Dto;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+
 public class DriverLocationDTO {
     private Long driverId;
     private double latitude;
     private double longitude;
-    private long timestamp;
     private double speed;
+    private long timestamp;
     //heading: hướng di chuyển, vd: 0 độ đại diện cho hướng Bắc
 
     public Long getDriverId() {

@@ -9,10 +9,11 @@ import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.Map;
 
+@Service
 public class DriverLocationService {
 
     @Autowired
@@ -21,9 +22,9 @@ public class DriverLocationService {
     @Autowired
     private DriverRepository driverRepository;
 
-    @Autowired
-    @Qualifier("redisTemplateDriverLocation")
-    private RedisTemplate<String, Object> redisTemplateDriverLocation;
+//    @Autowired
+//    @Qualifier("redisTemplateDriverLocation")
+//    private RedisTemplate<String, Object> redisTemplateDriverLocation;
 
     @Transactional
     public void saveLocation(DriverLocationDTO location) {
@@ -34,15 +35,15 @@ public class DriverLocationService {
         driverLocation.setDriver(driver);
         driverLocation.setLatitude(location.getLatitude());
         driverLocation.setLongitude(location.getLongitude());
-        driverLocation.setSpeed(40.0);//tạm thời set default = 40km/h
-        driverLocation.setTimestamp(location.getTimestamp());
+        driverLocation.setSpeed(location.getSpeed());//tạm thời set default = 40km/h
+        driverLocation.setTimestamp(location.getTimestamp());//convert long -> timestamp (postgreSQL): Timestamp timestamp = new Timestamp(long_typetime);
         driverLocation.setRecordedAt(LocalDateTime.now());
 
         //Lưu vị trí hiện tại vào PostgreSQL để sau này làm phần history
         driverLocationRepository.save(driverLocation);
 
         //Lưu vị trí hiện tại vào Redis Stream để phân tích và cảnh báo sau này
-        redisTemplateDriverLocation.opsForStream().add("driver_location_stream", Map.of("driverId", driver.getDriverId().toString(), "locationData", location));
+//        redisTemplateDriverLocation.opsForStream().add("driver_location_stream", Map.of("driverId", driver.getDriverId().toString(), "locationData", location));
 
     }
 }
