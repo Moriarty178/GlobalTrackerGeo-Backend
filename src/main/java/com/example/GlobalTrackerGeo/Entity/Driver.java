@@ -10,6 +10,7 @@ public class Driver {
 
 //    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "driver_id")
     private Long driverId;
 
@@ -18,6 +19,9 @@ public class Driver {
 
     @Column(name = "last_name", length = 255, nullable = false)
     private String lastName;
+
+    @Column(name = "email",length = 255,nullable = false)
+    private String email;
 
     @Column(name = "phone", length = 255, nullable = false)
     private String phone;
@@ -53,6 +57,14 @@ public class Driver {
 
     public void setLastName(String lastName) {
         this.lastName = lastName;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
     }
 
     public String getPhone() {
