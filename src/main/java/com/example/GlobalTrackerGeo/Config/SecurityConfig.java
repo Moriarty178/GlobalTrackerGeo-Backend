@@ -34,14 +34,14 @@ public class SecurityConfig {
                 .cors(cors -> cors
                         .configurationSource(request -> {
                             CorsConfiguration config = new CorsConfiguration();
-                            config.setAllowedOrigins(List.of("http://127.0.0.1:5500")); //Thêm nguồn front-end
+                            config.setAllowedOrigins(List.of("*")); //Thêm nguồn front-end
                             config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
                             config.setAllowedHeaders(List.of("*"));
                             return config;
                         }))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/ws/**").permitAll()// chỉ định đường dẫn + phân quyền
-                        .requestMatchers("/api/auth/**")// chỉ định các đường dẫn th này là: tất cả URL bắt đầu với /public/. Kí tự ** là đường dẫn con, phần sau (sub-path): dùng cho các tài nguyên công cộng như: trang giới thiệu, hoặc các API ko cần bảo mật
+                        .requestMatchers("/api/**")// (tránh lỗi 403 :forbidden) chỉ định các đường dẫn th này là: tất cả URL bắt đầu với /public/. Kí tự ** là đường dẫn con, phần sau (sub-path): dùng cho các tài nguyên công cộng như: trang giới thiệu, hoặc các API ko cần bảo mật
                         .permitAll() // tất cả các request đến các đường dẫn đã chỉ định trong requestMatchers("", "",vv...) ở trên sẽ được phép truy cập mà không cần phải xác thực (Authentication).(dù đăng nhập rồi hay chưa, cũng có thể truy cập các URL này.
                         .anyRequest().authenticated() // Các request khác cần phải xác thực
                 )

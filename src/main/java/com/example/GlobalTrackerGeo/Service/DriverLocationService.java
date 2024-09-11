@@ -3,8 +3,10 @@ package com.example.GlobalTrackerGeo.Service;
 import com.example.GlobalTrackerGeo.Dto.DriverLocationDTO;
 import com.example.GlobalTrackerGeo.Entity.Driver;
 import com.example.GlobalTrackerGeo.Entity.DriverLocation;
+import com.example.GlobalTrackerGeo.Entity.Map;
 import com.example.GlobalTrackerGeo.Repository.DriverLocationRepository;
 import com.example.GlobalTrackerGeo.Repository.DriverRepository;
+import com.example.GlobalTrackerGeo.Repository.MapRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -21,6 +23,9 @@ public class DriverLocationService {
 
     @Autowired
     private DriverRepository driverRepository;
+
+    @Autowired
+    private MapRepository mapRepository;
 
 //    @Autowired
 //    @Qualifier("redisTemplateDriverLocation")
@@ -43,7 +48,9 @@ public class DriverLocationService {
         driverLocationRepository.save(driverLocation);
 
         //Lưu vị trí hiện tại vào Redis Stream để phân tích và cảnh báo sau này
-//        redisTemplateDriverLocation.opsForStream().add("driver_location_stream", Map.of("driverId", driver.getDriverId().toString(), "locationData", location));
+        //redisTemplateDriverLocation.opsForStream().add("driver_location_stream", Map.of("driverId", driver.getDriverId().toString(), "locationData", location));
 
     }
+
+
 }

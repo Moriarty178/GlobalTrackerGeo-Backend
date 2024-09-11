@@ -1,20 +1,23 @@
 package com.example.GlobalTrackerGeo.Controller;
 
 import com.example.GlobalTrackerGeo.Dto.DriverLocationDTO;
+import com.example.GlobalTrackerGeo.Dto.LogoutRequest;
 import com.example.GlobalTrackerGeo.Entity.Alert;
 import com.example.GlobalTrackerGeo.Entity.Driver;
+import com.example.GlobalTrackerGeo.Entity.Map;
 import com.example.GlobalTrackerGeo.Repository.AlertRepository;
 import com.example.GlobalTrackerGeo.Repository.DriverLocationRepository;
 import com.example.GlobalTrackerGeo.Repository.DriverRepository;
+import com.example.GlobalTrackerGeo.Repository.MapRepository;
 import com.example.GlobalTrackerGeo.Service.DriverLocationService;
+import com.example.GlobalTrackerGeo.Service.MapService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDateTime;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api")
@@ -24,13 +27,20 @@ public class DriverLocationController {
 
     @Autowired
     private DriverLocationService driverLocationService;
+    @Autowired
+    private MapService mapService;
 
     @Autowired
     private DriverRepository driverRepository;
+
     @Autowired
     private DriverLocationRepository driverLocationRepository;
+
     @Autowired
     private AlertRepository alertRepository;
+
+    @Autowired
+    private MapRepository mapRepository;
 
     @Autowired
     private SimpMessagingTemplate messagingTemplate;
@@ -43,12 +53,38 @@ public class DriverLocationController {
         //Gửi thông tin vị trí đến Admin Web qua WebSocket
         messagingTemplate.convertAndSend("/topic/driver-location", location);
 
+        // Thêm tất cả tài xế vào bảng "Map" để sau này lấy lại cập nhật map, điều hướng, đề xuất.
+        mapService.saveOrUpdateDriverLocationToMap(location);
+
         //Phân tích và cảnh bảo ex: quá tốc độ, vào vùng cấm (GeoZone), vv...
         if (location.getSpeed() > SPEED_LIMIT) {// sau này dùng 1 hàm riêng phân tích điều kiện gửi alert, ko chỉ quá tốc độ mà còn dựa trên khu vực địa lý vv...
             //gửi cảnh báo đến topic của tài xế cụ thể
             messagingTemplate.convertAndSend("/topic/alert/" + location.getDriverId(), createdAndSaveAlert(location));
         }
 
+    }
+
+    // Lấy tất danh sách tất cả tài xế kèm vị trí trong GlobalTrackerGeo
+    @GetMapping("/all-driver-location")
+    public List<Map> getAllMap() {
+        return mapRepository.findAll();
+    }
+
+    // Xử lý khi tài xế đăng xuất
+    @PostMapping("/logout")
+    public ResponseEntity<?> handleDriverLogout(@RequestBody LogoutRequest logoutRequest) {
+        long driverId = logoutRequest.getDriverId();
+
+        // Ví dụ: xóa vị trí của tài ế trong Redis, một danh sách lưu vị trí tài xế được cập nhật theo Admin Map. Có thể sử dụng danh sách, Redis này để sau này làm phần đề xuất, điều hướng.
+        //redisTemplate.delete("driver:" + driverId);
+
+        // Xóa record của tài xế khỏi bảng 'Map' (xóa khỏi danh sách tài xế trong mạng lưới GlobalTrackerGeo)
+        mapService.removeDriverFromMap(driverId);
+
+        //Gửi thống báo đến Admin Web để cập nhật bản đồ
+        messagingTemplate.convertAndSend("/topic/remove-driver", driverId);
+
+        return ResponseEntity.ok("Driver logged out successfully.");
     }
 
     //private boolean shouldSendAlert(DriverLocationDTO location) {...}

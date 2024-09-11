@@ -1,11 +1,13 @@
 package com.example.GlobalTrackerGeo.Controller;
 
 import com.example.GlobalTrackerGeo.Dto.AuthenticationRequest;
+import com.example.GlobalTrackerGeo.Dto.LoginResponse;
 import com.example.GlobalTrackerGeo.Dto.SignupRequest;
 import com.example.GlobalTrackerGeo.Entity.Driver;
 import com.example.GlobalTrackerGeo.Jwt.JwtUtil;
 import com.example.GlobalTrackerGeo.Repository.DriverRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -35,7 +37,7 @@ public class AuthController {
     private PasswordEncoder passwordEncoder;
 
     @PostMapping("/login")
-    public String createAuthenticationToken(@RequestBody AuthenticationRequest authenticationRequest) throws Exception {
+    public ResponseEntity<LoginResponse> createAuthenticationToken(@RequestBody AuthenticationRequest authenticationRequest) throws Exception {
         System.out.println("Receive login request:" + authenticationRequest);
         try {
             authenticationManager.authenticate( new UsernamePasswordAuthenticationToken(authenticationRequest.getEmail(), authenticationRequest.getPassword()) );
@@ -43,10 +45,15 @@ public class AuthController {
             throw new Exception("INVALID_CREDENTIALS", e);
         }
 
+        //Tìm tài xế đề lấy driverId
+        Driver driver = driverRepository.findByEmail(authenticationRequest.getEmail());
+
+        //Tạo jwt
         final UserDetails userDetails = userDetailsService.loadUserByUsername(authenticationRequest.getEmail());
         final String jwt = jwtUtil.generateToken(userDetails);
 
-        return jwt;//có thể lưu vào localStorage bên phía Client để gửi kèm các yêu cầu HTTP yêu cầu dịch vụ sau này.
+        LoginResponse loginResponse = new LoginResponse(jwt, driver.getDriverId());
+        return ResponseEntity.ok(loginResponse);// trả về đối tượng chứa jwt + driverId
     }
 
     @PostMapping("/signup")

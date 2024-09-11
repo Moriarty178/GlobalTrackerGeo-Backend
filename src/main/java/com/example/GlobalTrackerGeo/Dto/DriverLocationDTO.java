@@ -1,8 +1,5 @@
 package com.example.GlobalTrackerGeo.Dto;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-
 public class DriverLocationDTO {
     private Long driverId;
     private double latitude;
