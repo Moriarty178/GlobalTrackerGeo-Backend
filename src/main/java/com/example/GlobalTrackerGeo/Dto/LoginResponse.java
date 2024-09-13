@@ -1,6 +1,6 @@
 package com.example.GlobalTrackerGeo.Dto;
 
-public class LoginResponse {
+public class LoginResponse {// Driver Web -> Backend
     private String jwt;
     private long driverId;
 

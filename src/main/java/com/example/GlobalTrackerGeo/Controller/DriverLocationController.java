@@ -1,7 +1,6 @@
 package com.example.GlobalTrackerGeo.Controller;
 
-import com.example.GlobalTrackerGeo.Dto.DriverLocationDTO;
-import com.example.GlobalTrackerGeo.Dto.LogoutRequest;
+import com.example.GlobalTrackerGeo.Dto.*;
 import com.example.GlobalTrackerGeo.Entity.Alert;
 import com.example.GlobalTrackerGeo.Entity.Driver;
 import com.example.GlobalTrackerGeo.Entity.Map;
@@ -10,6 +9,7 @@ import com.example.GlobalTrackerGeo.Repository.DriverLocationRepository;
 import com.example.GlobalTrackerGeo.Repository.DriverRepository;
 import com.example.GlobalTrackerGeo.Repository.MapRepository;
 import com.example.GlobalTrackerGeo.Service.DriverLocationService;
+import com.example.GlobalTrackerGeo.Service.DriverService;
 import com.example.GlobalTrackerGeo.Service.MapService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -26,9 +26,12 @@ public class DriverLocationController {
     private final static double SPEED_LIMIT = 50.0;
 
     @Autowired
+    private DriverService driverService;
+    @Autowired
     private DriverLocationService driverLocationService;
     @Autowired
     private MapService mapService;
+
 
     @Autowired
     private DriverRepository driverRepository;
@@ -64,10 +67,21 @@ public class DriverLocationController {
 
     }
 
+    @PostMapping("/search-drivers")
+    public ResponseEntity<List<DriverDTO>> searchDriver(@RequestBody LocationRequest locationRequest) {
+        //System.out.println("Received locSource: " + locationRequest.getLocSource());
+        //System.out.println("Received locDestination: " + locationRequest.getLocDestination());
+        List<DriverDTO> nearestDrivers = driverService.findNearestDrivers(locationRequest.getLocSource());
+        return ResponseEntity.ok(nearestDrivers);
+    }
+
+
+
     // Lấy tất danh sách tất cả tài xế kèm vị trí trong GlobalTrackerGeo
     @GetMapping("/all-driver-location")
     public List<Map> getAllMap() {
-        return mapRepository.findAll();
+        //return mapRepository.findAll();
+        return mapService.getAllDriverActive();
     }
 
     // Xử lý khi tài xế đăng xuất

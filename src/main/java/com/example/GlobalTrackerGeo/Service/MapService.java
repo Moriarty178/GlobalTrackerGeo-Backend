@@ -7,6 +7,8 @@ import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 public class MapService {
 
@@ -31,5 +33,9 @@ public class MapService {
     @Transactional
     public void removeDriverFromMap(long driverId) {
         mapRepository.deleteByDriverId(driverId);
+    }
+
+    public List<Map> getAllDriverActive() {
+        return mapRepository.findAll();
     }
 }

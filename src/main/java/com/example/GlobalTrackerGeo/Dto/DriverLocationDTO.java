@@ -1,6 +1,6 @@
 package com.example.GlobalTrackerGeo.Dto;
 
-public class DriverLocationDTO {
+public class DriverLocationDTO {// driver web -> backend
     private Long driverId;
     private double latitude;
     private double longitude;

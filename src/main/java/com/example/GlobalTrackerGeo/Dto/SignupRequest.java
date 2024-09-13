@@ -1,6 +1,6 @@
 package com.example.GlobalTrackerGeo.Dto;
 
-public class SignupRequest {
+public class SignupRequest {// Driver Web -> Backend
     private String phone;
     private String email;
     private String password;

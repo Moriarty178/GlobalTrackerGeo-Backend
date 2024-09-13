@@ -1,6 +1,6 @@
 package com.example.GlobalTrackerGeo.Dto;
 
-public class LogoutRequest {
+public class LogoutRequest {// Driver Web -> Backend
     private long driverId;
 
     public long getDriverId() {
