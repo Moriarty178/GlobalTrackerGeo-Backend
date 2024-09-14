@@ -12,12 +12,17 @@ import com.example.GlobalTrackerGeo.Service.DriverLocationService;
 import com.example.GlobalTrackerGeo.Service.DriverService;
 import com.example.GlobalTrackerGeo.Service.MapService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 @RestController
 @RequestMapping("/api")
@@ -48,7 +53,7 @@ public class DriverLocationController {
     @Autowired
     private SimpMessagingTemplate messagingTemplate;
 
-    @MessageMapping("/driver-location")//tự động map tâất cả tin nhắn gửi từ Driver Web đến endpoint "/driver-location" để nó xử lý.
+    @MessageMapping("/driver-location")//Lăng nghe thông tin Driver Web pub qua topic = "/app/driver-location" sau đó xử lý.
     public void handleDriverLocation(@RequestBody DriverLocationDTO location) {
         //Lưu thông tin vị trí vào PostgreSQL và Redis Stream
         driverLocationService.saveLocation(location);
@@ -69,13 +74,43 @@ public class DriverLocationController {
 
     @PostMapping("/search-drivers")
     public ResponseEntity<List<DriverDTO>> searchDriver(@RequestBody LocationRequest locationRequest) {
-        //System.out.println("Received locSource: " + locationRequest.getLocSource());
-        //System.out.println("Received locDestination: " + locationRequest.getLocDestination());
         List<DriverDTO> nearestDrivers = driverService.findNearestDrivers(locationRequest.getLocSource());
         return ResponseEntity.ok(nearestDrivers);
     }
 
+    @PostMapping("/request-driver")
+    public ResponseEntity<?> requestDriver(@RequestBody DriverRequest driverRequest) {
+        // Gửi thông tin đơn hàng (driverRequest) đến tái xế qua websocket
+        messagingTemplate.convertAndSend("/topic/alert/" + driverRequest.getDriverId(), driverRequest);
 
+        // Chờ phản hồi từ Driver Web qua websocket "/app/driver-response"
+        CompletableFuture<String> futureResponse = new CompletableFuture<>();
+        driverService.registerDriverResponseHandler(driverRequest.getDriverId(), futureResponse);
+
+        try {
+            String driverResponse = futureResponse.get(30, TimeUnit.SECONDS);
+
+            if ("accepted".equals(driverResponse)) {
+                double estimatedTime = 15.0;//calculateEstimatedTime(driverRequest.getDistance());
+                // Thêm phân tạo trip và lưu vào csdl
+
+                return ResponseEntity.ok(java.util.Map.of(
+                        "status", "accepted",
+                        "distance", driverRequest.getDistance(),
+                        "estimatedTime", estimatedTime
+                ));
+            } else {
+                return ResponseEntity.ok(java.util.Map.of("status", "declined"));
+            }
+        } catch (TimeoutException | InterruptedException | ExecutionException e) {
+            return ResponseEntity.status(HttpStatus.REQUEST_TIMEOUT).body("Driver response timed out.");
+        }
+    }
+    @MessageMapping("/driver-response")
+    public void handlerDriverResponse(@RequestBody DriverResponse driverResponse) {
+        // Phản hồi về Backend thông qua CompletableFuture
+        driverService.handleDriverResponse(driverResponse.getDriverId(), driverResponse.getStatus());
+    }
 
     // Lấy tất danh sách tất cả tài xế kèm vị trí trong GlobalTrackerGeo
     @GetMapping("/all-driver-location")

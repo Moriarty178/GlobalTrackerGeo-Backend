@@ -1,13 +1,19 @@
 package com.example.GlobalTrackerGeo.Service;
 
 import com.example.GlobalTrackerGeo.Dto.DriverDTO;
+import com.example.GlobalTrackerGeo.Dto.DriverResponse;
 import com.example.GlobalTrackerGeo.Dto.Location;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.RequestBody;
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 @Service
@@ -24,7 +30,7 @@ public class DriverService {
                      "JOIN drivers d ON m.driver_id = d.driver_id";
 
         List<DriverDTO> allDrivers = jdbcTemplate.query(sql, (rs, rowNum) -> {
-            Long driverId = rs.getLong("driver_id");
+            long driverId = rs.getLong("driver_id");
             String driverName = rs.getString("first_name");
             double latitude = rs.getDouble("latitude");
             double longitude = rs.getDouble("longitude");
@@ -32,7 +38,7 @@ public class DriverService {
             Location driverLocation = new Location(latitude, longitude);
             double distance = calculateDistance(locSource, driverLocation);
 
-            return new DriverDTO(driverName, driverLocation, distance);
+            return new DriverDTO(driverId, driverName, driverLocation, distance);
         });
 
         // Tìm tối đa 7 tái xế gần nhất dựa trên khoảng cách
@@ -57,5 +63,21 @@ public class DriverService {
                  * Math.sin(lonDistance / 2) * Math.sin(lonDistance / 2);
         double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 -a));
         return R * c; // Khoảng cách tính bằng Km.
+    }
+
+
+    private final Map<Long, CompletableFuture<String>> driverResponseHandlers = new ConcurrentHashMap<>();
+
+    public void registerDriverResponseHandler(Long driverId, CompletableFuture<String> futureResponse) {
+        driverResponseHandlers.put(driverId, futureResponse);
+    }
+
+    public void handleDriverResponse(Long driverId, String responseStatus) {
+        CompletableFuture<String> futureResponse = driverResponseHandlers.get(driverId);
+        if (futureResponse != null) {
+            futureResponse.complete(responseStatus);
+            // Xóa handler sau khi nhận được phản hồi
+            driverResponseHandlers.remove(driverId);
+        }
     }
 }

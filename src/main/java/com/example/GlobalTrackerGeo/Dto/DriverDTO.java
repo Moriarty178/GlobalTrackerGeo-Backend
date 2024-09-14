@@ -2,14 +2,24 @@ package com.example.GlobalTrackerGeo.Dto;
 
 
 public class DriverDTO {// Backend -> customer web
+    private long driverId;
     private String name;
     private Location location;
     private double distance;
 
-    public DriverDTO(String name, Location location, double distance) {
+    public DriverDTO(long driverId, String name, Location location, double distance) {
+        this.driverId = driverId;
         this.name = name;
         this.location = location;
         this.distance = distance;
+    }
+
+    public long getDriverId() {
+        return driverId;
+    }
+
+    public void setDriverId(long driverId) {
+        this.driverId = driverId;
     }
 
     public String getName() {
