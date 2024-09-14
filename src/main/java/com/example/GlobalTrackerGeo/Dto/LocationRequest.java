@@ -3,7 +3,7 @@ package com.example.GlobalTrackerGeo.Dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class LocationRequest {
+public class LocationRequest {// customer -> backend searchDriver()
     @JsonProperty("loc_source")
     private Location locSource;
 

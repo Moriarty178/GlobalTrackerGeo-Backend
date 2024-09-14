@@ -35,7 +35,7 @@ public class DriverService {
             double latitude = rs.getDouble("latitude");
             double longitude = rs.getDouble("longitude");
 
-            Location driverLocation = new Location(latitude, longitude);
+            Location driverLocation = new Location(latitude, longitude, "");
             double distance = calculateDistance(locSource, driverLocation);
 
             return new DriverDTO(driverId, driverName, driverLocation, distance);
