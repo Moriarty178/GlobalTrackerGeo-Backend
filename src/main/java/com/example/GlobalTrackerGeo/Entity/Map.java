@@ -2,7 +2,8 @@ package com.example.GlobalTrackerGeo.Entity;
 
 import jakarta.persistence.*;
 
-@Entity(name = "map")
+@Entity
+@Table(name = "map")
 public class Map {
 
     @Id

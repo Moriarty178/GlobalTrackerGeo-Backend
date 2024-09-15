@@ -5,6 +5,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public class DriverRequest {//Customer Web -> Backend,customer chọn 1 tài xê cụ thể
     private Long driverId;
 
+    private Long customerId;
+
     @JsonProperty("loc_source")
     private Location loc_source;
 
@@ -19,6 +21,14 @@ public class DriverRequest {//Customer Web -> Backend,customer chọn 1 tài xê
 
     public void setDriverId(Long driverId) {
         this.driverId = driverId;
+    }
+
+    public Long getCustomerId() {
+        return customerId;
+    }
+
+    public void setCustomerId(Long customerId) {
+        this.customerId = customerId;
     }
 
     public Location getLoc_source() {

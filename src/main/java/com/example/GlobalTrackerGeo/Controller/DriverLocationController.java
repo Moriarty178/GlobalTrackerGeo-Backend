@@ -4,13 +4,12 @@ import com.example.GlobalTrackerGeo.Dto.*;
 import com.example.GlobalTrackerGeo.Entity.Alert;
 import com.example.GlobalTrackerGeo.Entity.Driver;
 import com.example.GlobalTrackerGeo.Entity.Map;
-import com.example.GlobalTrackerGeo.Repository.AlertRepository;
-import com.example.GlobalTrackerGeo.Repository.DriverLocationRepository;
-import com.example.GlobalTrackerGeo.Repository.DriverRepository;
-import com.example.GlobalTrackerGeo.Repository.MapRepository;
+import com.example.GlobalTrackerGeo.Entity.Trip;
+import com.example.GlobalTrackerGeo.Repository.*;
 import com.example.GlobalTrackerGeo.Service.DriverLocationService;
 import com.example.GlobalTrackerGeo.Service.DriverService;
 import com.example.GlobalTrackerGeo.Service.MapService;
+import com.example.GlobalTrackerGeo.Service.TripService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,7 +17,9 @@ import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -36,6 +37,8 @@ public class DriverLocationController {
     private DriverLocationService driverLocationService;
     @Autowired
     private MapService mapService;
+    @Autowired
+    private TripService tripService;
 
 
     @Autowired
@@ -49,6 +52,9 @@ public class DriverLocationController {
 
     @Autowired
     private MapRepository mapRepository;
+
+    @Autowired
+    private TripRepository tripRepository;
 
     @Autowired
     private SimpMessagingTemplate messagingTemplate;
@@ -80,9 +86,9 @@ public class DriverLocationController {
 
     @PostMapping("/request-driver")
     public ResponseEntity<?> requestDriver(@RequestBody DriverRequest driverRequest) {
-        System.out.println("loc_source latitude:" + driverRequest.getLoc_source().getLat());
-        System.out.println("loc_source longitude:" + driverRequest.getLoc_source().getLon());
-        System.out.println("loc_source displayname:" + driverRequest.getLoc_source().getDisplayName());
+        //System.out.println("loc_source latitude:" + driverRequest.getLoc_source().getLat());
+        //System.out.println("loc_source longitude:" + driverRequest.getLoc_source().getLon());
+        //System.out.println("loc_source displayname:" + driverRequest.getLoc_source().getDisplayName());
         // Gửi thông tin đơn hàng (driverRequest) đến tái xế qua websocket
         messagingTemplate.convertAndSend("/topic/alert/" + driverRequest.getDriverId(), driverRequest);
 
@@ -96,17 +102,39 @@ public class DriverLocationController {
             if ("accepted".equals(driverResponse)) {
                 double estimatedTime = 15.0;//calculateEstimatedTime(driverRequest.getDistance());
                 // Thêm phân tạo trip và lưu vào csdl
+//                tripService.saveNewTrip();
+                Trip newTrip = new Trip();
+                newTrip.setTripId(UUID.randomUUID().toString());
+                newTrip.setDriverId(driverRequest.getDriverId());
+                newTrip.setStatus("in_progress");
+                newTrip.setCustomerId(driverRequest.getCustomerId());
+                newTrip.setSource(driverRequest.getLoc_source().toString());
+                newTrip.setDestination(driverRequest.getLoc_destination().toString());
+                newTrip.setRoute(""); // Thêm các cặp (lat, lon) mỗi 5s kể từ khi tài xế bắt đầu ấn accept.
+
+                tripRepository.save(newTrip); // Lưu chuyến đi vừa tạo vào database
+
+
+                // Test chuyển đổi chuỗi source, destiantion trong PostgreSQL -> Location
+                tripService.getLocationFromJsonDb("0ff3ad60-6750-42f8-b29e-ad769eee2f48");
+
+                // Test add route
+                tripService.updateTripRoute("0ff3ad60-6750-42f8-b29e-ad769eee2f48", 25.0285, 132.6789);
 
                 return ResponseEntity.ok(java.util.Map.of(
                         "status", "accepted",
                         "distance", driverRequest.getDistance(),
                         "estimatedTime", estimatedTime
+//                        "lat", "latitude",
+//                        "lon", "longitude"
                 ));
             } else {
                 return ResponseEntity.ok(java.util.Map.of("status", "declined"));
             }
         } catch (TimeoutException | InterruptedException | ExecutionException e) {
             return ResponseEntity.status(HttpStatus.REQUEST_TIMEOUT).body("Driver response timed out.");
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
     @MessageMapping("/driver-response")
