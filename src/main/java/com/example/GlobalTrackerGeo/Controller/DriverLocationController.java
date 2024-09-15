@@ -102,17 +102,17 @@ public class DriverLocationController {
             if ("accepted".equals(driverResponse)) {
                 double estimatedTime = 15.0;//calculateEstimatedTime(driverRequest.getDistance());
                 // Thêm phân tạo trip và lưu vào csdl
-//                tripService.saveNewTrip();
-                Trip newTrip = new Trip();
-                newTrip.setTripId(UUID.randomUUID().toString());
-                newTrip.setDriverId(driverRequest.getDriverId());
-                newTrip.setStatus("in_progress");
-                newTrip.setCustomerId(driverRequest.getCustomerId());
-                newTrip.setSource(driverRequest.getLoc_source().toString());
-                newTrip.setDestination(driverRequest.getLoc_destination().toString());
-                newTrip.setRoute(""); // Thêm các cặp (lat, lon) mỗi 5s kể từ khi tài xế bắt đầu ấn accept.
-
-                tripRepository.save(newTrip); // Lưu chuyến đi vừa tạo vào database
+                tripService.saveNewTrip(driverRequest);
+//                Trip newTrip = new Trip();
+//                newTrip.setTripId(UUID.randomUUID().toString());
+//                newTrip.setDriverId(driverRequest.getDriverId());
+//                newTrip.setStatus("in_progress");
+//                newTrip.setCustomerId(driverRequest.getCustomerId());
+//                newTrip.setSource(driverRequest.getLoc_source().toString());
+//                newTrip.setDestination(driverRequest.getLoc_destination().toString());
+//                newTrip.setRoute(""); // Thêm các cặp (lat, lon) mỗi 5s kể từ khi tài xế bắt đầu ấn accept.
+//
+//                tripRepository.save(newTrip); // Lưu chuyến đi vừa tạo vào database
 
 
                 // Test chuyển đổi chuỗi source, destiantion trong PostgreSQL -> Location
@@ -149,6 +149,7 @@ public class DriverLocationController {
         //return mapRepository.findAll();
         return mapService.getAllDriverActive();
     }
+
 
     // Xử lý khi tài xế đăng xuất
     @PostMapping("/logout")

@@ -1,14 +1,9 @@
 package com.example.GlobalTrackerGeo.Entity;
 
-import com.example.GlobalTrackerGeo.Dto.Location;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.fasterxml.jackson.databind.util.JSONPObject;
 import jakarta.persistence.*;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
