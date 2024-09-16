@@ -41,7 +41,7 @@ public class SecurityConfig {
                         }))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/ws/**").permitAll()// chỉ định đường dẫn + phân quyền
-                        .requestMatchers("/api/**", "/trips/**")// (tránh lỗi 403 :forbidden) chỉ định các đường dẫn th này là: tất cả URL bắt đầu với /public/. Kí tự ** là đường dẫn con, phần sau (sub-path): dùng cho các tài nguyên công cộng như: trang giới thiệu, hoặc các API ko cần bảo mật
+                        .requestMatchers("/api/**", "/trips/**", "/payments/**")// (tránh lỗi 403 :forbidden) chỉ định các đường dẫn th này là: tất cả URL bắt đầu với /public/. Kí tự ** là đường dẫn con, phần sau (sub-path): dùng cho các tài nguyên công cộng như: trang giới thiệu, hoặc các API ko cần bảo mật
                         .permitAll() // tất cả các request đến các đường dẫn đã chỉ định trong requestMatchers("", "",vv...) ở trên sẽ được phép truy cập mà không cần phải xác thực (Authentication).(dù đăng nhập rồi hay chưa, cũng có thể truy cập các URL này.
                         .anyRequest().authenticated() // Các request khác cần phải xác thực
                 )

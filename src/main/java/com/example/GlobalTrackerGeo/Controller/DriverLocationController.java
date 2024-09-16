@@ -1,10 +1,7 @@
 package com.example.GlobalTrackerGeo.Controller;
 
 import com.example.GlobalTrackerGeo.Dto.*;
-import com.example.GlobalTrackerGeo.Entity.Alert;
-import com.example.GlobalTrackerGeo.Entity.Driver;
-import com.example.GlobalTrackerGeo.Entity.Map;
-import com.example.GlobalTrackerGeo.Entity.Trip;
+import com.example.GlobalTrackerGeo.Entity.*;
 import com.example.GlobalTrackerGeo.Repository.*;
 import com.example.GlobalTrackerGeo.Service.DriverLocationService;
 import com.example.GlobalTrackerGeo.Service.DriverService;
@@ -19,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
@@ -39,7 +37,6 @@ public class DriverLocationController {
     private MapService mapService;
     @Autowired
     private TripService tripService;
-
 
     @Autowired
     private DriverRepository driverRepository;
@@ -138,7 +135,6 @@ public class DriverLocationController {
         //return mapRepository.findAll();
         return mapService.getAllDriverActive();
     }
-
 
     // Xử lý khi tài xế đăng xuất
     @PostMapping("/logout")

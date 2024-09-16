@@ -3,7 +3,9 @@ package com.example.GlobalTrackerGeo.Controller;
 import com.example.GlobalTrackerGeo.Dto.LocationNoName;
 import com.example.GlobalTrackerGeo.Dto.RequestCancelTrip;
 import com.example.GlobalTrackerGeo.Dto.TripRequest;
+import com.example.GlobalTrackerGeo.Entity.Payment;
 import com.example.GlobalTrackerGeo.Entity.Trip;
+import com.example.GlobalTrackerGeo.Repository.PaymentRepository;
 import com.example.GlobalTrackerGeo.Repository.TripRepository;
 import com.example.GlobalTrackerGeo.Service.TripService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/trips")
