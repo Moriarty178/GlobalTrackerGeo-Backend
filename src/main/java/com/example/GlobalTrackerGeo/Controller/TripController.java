@@ -1,6 +1,7 @@
 package com.example.GlobalTrackerGeo.Controller;
 
 import com.example.GlobalTrackerGeo.Dto.LocationNoName;
+import com.example.GlobalTrackerGeo.Dto.RequestCancelTrip;
 import com.example.GlobalTrackerGeo.Dto.TripRequest;
 import com.example.GlobalTrackerGeo.Entity.Trip;
 import com.example.GlobalTrackerGeo.Repository.TripRepository;
@@ -9,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -45,6 +47,19 @@ public class TripController {
         return ResponseEntity.ok(trips.getContent());
     }
 
+    @PostMapping("/cancel")
+    public ResponseEntity<String> cancelTrip(@RequestBody Map<String, String> request) {
+        try {
+            tripService.cancelTrip(request.get("tripId"));
+            // Thông báo cho tài xế qua websocket, dùng luôn "/topic/alert + driverId" thêm phần type = "cancelTrip"
+
+            return ResponseEntity.ok("Trip canceled successfully!");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error canceling trip");
+        }
+    }
+
+    // Láy thông tin chi tiết của một trip cụ thể
     @GetMapping("/{tripId}/route")
     public List<LocationNoName> getTripRoute(@PathVariable String tripId) {
         return tripService.getTripRoute(tripId);

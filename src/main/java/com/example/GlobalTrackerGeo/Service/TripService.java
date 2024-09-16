@@ -3,6 +3,7 @@ package com.example.GlobalTrackerGeo.Service;
 import com.example.GlobalTrackerGeo.Dto.DriverRequest;
 import com.example.GlobalTrackerGeo.Dto.Location;
 import com.example.GlobalTrackerGeo.Dto.LocationNoName;
+import com.example.GlobalTrackerGeo.Dto.RequestCancelTrip;
 import com.example.GlobalTrackerGeo.Entity.Trip;
 import com.example.GlobalTrackerGeo.Repository.TripRepository;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -10,6 +11,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -23,6 +25,8 @@ public class TripService {
 
     private TripRepository tripRepository;
     private ObjectMapper objectMapper;
+    @Autowired
+    private SimpMessagingTemplate messagingTemplate;
 
     public TripService(TripRepository tripRepository, ObjectMapper objectMapper) {
         this.tripRepository = tripRepository;
@@ -34,7 +38,7 @@ public class TripService {
         Trip newTrip = new Trip();
         newTrip.setTripId(UUID.randomUUID().toString());
         newTrip.setDriverId(driverRequest.getDriverId());
-        newTrip.setStatus("1");
+        newTrip.setStatus("2"); // đã có tài xế ấn accept
         newTrip.setCustomerId(driverRequest.getCustomerId());
         newTrip.setSource(driverRequest.getLoc_source().toString());
         newTrip.setDestination(driverRequest.getLoc_destination().toString());
@@ -56,6 +60,40 @@ public class TripService {
             tripRepository.save(trip);
         } else {
             throw new RuntimeException("Trip not found withd ID: " + tripId);
+        }
+    }
+
+    // SeeDetail
+    public Trip getDetailTrip(String tripId) {
+        Optional<Trip> optionalTrip = tripRepository.findById(tripId);
+
+        if (optionalTrip.isPresent()) {
+            Trip trip = optionalTrip.get();
+
+
+        }
+        return null;
+    }
+
+    // Cancel Trip
+    public void cancelTrip(String tripId) {
+        Optional<Trip> optionalTrip = tripRepository.findById(tripId);
+        if (optionalTrip.isPresent()) {
+            Trip trip = optionalTrip.get();
+
+            // Kiểm tra lại status trip (đề phòng trên giao diện và PostgreSQL ko khớp)
+            if (trip.getStatus().equals("1") || trip.getStatus().equals("2")) {
+                // Cập nhật trạng thái đã hủy status "5"
+                trip.setStatus("5");
+                tripRepository.save(trip);
+
+                // Gửi thông báo đến cho Driver Web đơn tripId bị hủy qua WebSocket (có thể dể bên backend)
+                messagingTemplate.convertAndSend("/topic/cancel/" + trip.getDriverId(), tripId);
+            } else {
+                throw new IllegalStateException("Trip cannot be canceled at this stage.");
+            }
+        } else {
+            throw  new RuntimeException("Trip not found with ID: " + tripId);
         }
     }
 
