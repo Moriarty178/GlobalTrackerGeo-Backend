@@ -15,6 +15,9 @@ public class DriverRequest {//Customer Web -> Backend,customer chọn 1 tài xê
 
     private double distance;
 
+    @JsonProperty("payment_request")
+    private PaymentRequest paymentRequest;
+
     public Long getDriverId() {
         return driverId;
     }
@@ -53,5 +56,13 @@ public class DriverRequest {//Customer Web -> Backend,customer chọn 1 tài xê
 
     public void setDistance(double distance) {
         this.distance = distance;
+    }
+
+    public PaymentRequest getPaymentRequest() {
+        return paymentRequest;
+    }
+
+    public void setPaymentRequest(PaymentRequest paymentRequest) {
+        this.paymentRequest = paymentRequest;
     }
 }

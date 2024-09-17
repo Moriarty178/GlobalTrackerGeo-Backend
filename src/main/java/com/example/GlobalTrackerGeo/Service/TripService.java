@@ -1,9 +1,7 @@
 package com.example.GlobalTrackerGeo.Service;
 
-import com.example.GlobalTrackerGeo.Dto.DriverRequest;
-import com.example.GlobalTrackerGeo.Dto.Location;
-import com.example.GlobalTrackerGeo.Dto.LocationNoName;
-import com.example.GlobalTrackerGeo.Dto.RequestCancelTrip;
+import com.example.GlobalTrackerGeo.Dto.*;
+import com.example.GlobalTrackerGeo.Entity.Payment;
 import com.example.GlobalTrackerGeo.Entity.Trip;
 import com.example.GlobalTrackerGeo.Repository.TripRepository;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -25,8 +23,11 @@ public class TripService {
 
     private TripRepository tripRepository;
     private ObjectMapper objectMapper;
+
     @Autowired
     private SimpMessagingTemplate messagingTemplate;
+    @Autowired
+    private PaymentService paymentService;
 
     public TripService(TripRepository tripRepository, ObjectMapper objectMapper) {
         this.tripRepository = tripRepository;
@@ -36,7 +37,8 @@ public class TripService {
     @Transactional
     public void saveNewTrip(DriverRequest driverRequest) {
         Trip newTrip = new Trip();
-        newTrip.setTripId(UUID.randomUUID().toString());
+        String tripId = UUID.randomUUID().toString();
+        newTrip.setTripId(tripId);
         newTrip.setDriverId(driverRequest.getDriverId());
         newTrip.setStatus("2"); // đã có tài xế ấn accept
         newTrip.setCustomerId(driverRequest.getCustomerId());
@@ -45,6 +47,9 @@ public class TripService {
         newTrip.setRoute(""); // Thêm các cặp (lat, lon) mỗi 5s kể từ khi tài xế bắt đầu ấn accept.
 
         tripRepository.save(newTrip); // Lưu trip
+
+        // Lưu luôn thông tin thanh toán mà người dùng chọn khi đặt trip
+        paymentService.savePayment(driverRequest.getPaymentRequest(), tripId);
     }
 
     // Thêm địa chỉ mới (lat, lon) vào route của bảng trip

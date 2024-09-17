@@ -4,6 +4,9 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import jakarta.websocket.ClientEndpoint;
+
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "payments")
@@ -30,6 +33,9 @@ public class Payment {
 
     @Column(name = "payment_method", nullable = false)
     private String paymentMethod;
+
+    @Column(name = "created_at", nullable = false)
+    private LocalDateTime createdAt = LocalDateTime.now();
 
     public String getPaymentId() {
         return paymentId;
@@ -85,5 +91,13 @@ public class Payment {
 
     public void setPaymentMethod(String paymentMethod) {
         this.paymentMethod = paymentMethod;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
     }
 }

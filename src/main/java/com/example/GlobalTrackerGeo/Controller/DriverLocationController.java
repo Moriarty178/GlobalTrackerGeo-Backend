@@ -12,6 +12,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.security.core.parameters.P;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
@@ -102,7 +103,7 @@ public class DriverLocationController {
 
             if ("accepted".equals(driverResponse)) {
                 double estimatedTime = 15.0;//calculateEstimatedTime(driverRequest.getDistance());
-                // Thêm phân tạo trip và lưu vào csdl
+                // Lưu trip và payment tương ứng vào database
                 tripService.saveNewTrip(driverRequest);
 
                 // Test chuyển đổi chuỗi source, destiantion trong PostgreSQL -> Location
