@@ -89,12 +89,16 @@ public class DriverLocationController {
         // Gửi thông tin đơn hàng (driverRequest) đến tái xế qua websocket
         messagingTemplate.convertAndSend("/topic/alert/" + driverRequest.getDriverId(), driverRequest);
 
+        // Thêm phần thời gian chờ = 10s. Sau 10s tài xế ko ấn thì phản hồi lại cho customer để chọn tài xế khác ??????????
+
         // Chờ phản hồi từ Driver Web qua websocket "/app/driver-response"
         CompletableFuture<String> futureResponse = new CompletableFuture<>();
-        driverService.registerDriverResponseHandler(driverRequest.getDriverId(), futureResponse);
+        driverService.registerDriverResponseHandler(driverRequest.getDriverId(), futureResponse);// lắng nghe
 
         try {
-            String driverResponse = futureResponse.get(30, TimeUnit.SECONDS);
+            String driverResponse = futureResponse.get(15, TimeUnit.SECONDS);//đợi tối đa 15s cho tài xế phản hồi
+            // Trả thông báo khi tái xế không có phản hồi accept hay deny
+
 
             if ("accepted".equals(driverResponse)) {
                 double estimatedTime = 15.0;//calculateEstimatedTime(driverRequest.getDistance());
@@ -102,10 +106,10 @@ public class DriverLocationController {
                 tripService.saveNewTrip(driverRequest);
 
                 // Test chuyển đổi chuỗi source, destiantion trong PostgreSQL -> Location
-                tripService.getLocationFromJsonDb("0ff3ad60-6750-42f8-b29e-ad769eee2f48");
+                tripService.getLocationFromJsonDb("1e065510-29dc-47a1-8075-abb3544b5e06");
 
                 // Test add route
-                tripService.updateTripRoute("0ff3ad60-6750-42f8-b29e-ad769eee2f48", 25.0285, 132.6789);
+                tripService.updateTripRoute("1e065510-29dc-47a1-8075-abb3544b5e06", 25.0285, 132.6789);
 
                 return ResponseEntity.ok(java.util.Map.of(
                         "status", "accepted",

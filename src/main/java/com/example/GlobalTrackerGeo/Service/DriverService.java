@@ -66,13 +66,15 @@ public class DriverService {
     }
 
 
-    private final Map<Long, CompletableFuture<String>> driverResponseHandlers = new ConcurrentHashMap<>();
+    // Tổng thể PostMapping("/request-driver") <-> @MessageMapping("/driver-response)
+    // ===> PostMapping("/request-driver") <->    (đầu cắm 1) driverService (đầu cắm 2)   <---->  @MessageMapping("/driver-response)
+    private final Map<Long, CompletableFuture<String>> driverResponseHandlers = new ConcurrentHashMap<>(); // dây nối 2 đầu cắm.
 
-    public void registerDriverResponseHandler(Long driverId, CompletableFuture<String> futureResponse) {
+    public void registerDriverResponseHandler(Long driverId, CompletableFuture<String> futureResponse) { // đầu cắm (1) driverService <-> @PostMapping("/request-driver")
         driverResponseHandlers.put(driverId, futureResponse);
     }
 
-    public void handleDriverResponse(Long driverId, String responseStatus) {
+    public void handleDriverResponse(Long driverId, String responseStatus) {// đầu cắm (2) driverService <-> @MessageMapping("/driver-response")
         CompletableFuture<String> futureResponse = driverResponseHandlers.get(driverId);
         if (futureResponse != null) {
             futureResponse.complete(responseStatus);

@@ -142,7 +142,7 @@ public class Trip {
 
             // Thêm vị trí mới vào routeArray
             routeArray.add(newLocation);
-            System.out.println(routeArray);
+//            System.out.println(routeArray);
             // Chuyển ArrayNode thành chuỗi JSON và lưu vào trường "route"
             this.route = objectMapper.writeValueAsString(routeArray);
         } catch (IOException e) {

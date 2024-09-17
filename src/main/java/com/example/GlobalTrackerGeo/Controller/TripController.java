@@ -1,11 +1,14 @@
 package com.example.GlobalTrackerGeo.Controller;
 
 import com.example.GlobalTrackerGeo.Dto.LocationNoName;
+import com.example.GlobalTrackerGeo.Dto.RatingRequest;
 import com.example.GlobalTrackerGeo.Dto.RequestCancelTrip;
 import com.example.GlobalTrackerGeo.Dto.TripRequest;
 import com.example.GlobalTrackerGeo.Entity.Payment;
+import com.example.GlobalTrackerGeo.Entity.Rating;
 import com.example.GlobalTrackerGeo.Entity.Trip;
 import com.example.GlobalTrackerGeo.Repository.PaymentRepository;
+import com.example.GlobalTrackerGeo.Repository.RatingRepository;
 import com.example.GlobalTrackerGeo.Repository.TripRepository;
 import com.example.GlobalTrackerGeo.Service.TripService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +22,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/trips")
@@ -26,15 +30,11 @@ public class TripController {
 
     @Autowired
     private TripService tripService;
+
     @Autowired
     private TripRepository tripRepository;
-
-//    @PostMapping("/my-trips")
-//    public ResponseEntity<List<Trip>> getCustomerTrips(@RequestBody Map<String, Long> request) {
-//        Long customerId = request.get("customerId");
-//        List<Trip> trips = tripService.getTripsByCustomerId(customerId);
-//        return ResponseEntity.ok(trips);
-//    }
+    @Autowired
+    private RatingRepository ratingRepository;
 
     @PostMapping("/my-trips")
     public ResponseEntity<List<Trip>> getMyTrips(@RequestBody TripRequest tripRequest) {
@@ -59,6 +59,30 @@ public class TripController {
             return ResponseEntity.ok("Trip canceled successfully!");
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error canceling trip");
+        }
+    }
+
+    @PostMapping("/rate-trip")
+    public ResponseEntity<String> rateTrip(@RequestBody RatingRequest request) {
+        Optional<Trip> optionalTrip = tripRepository.findById(request.getTripId());
+
+        if (optionalTrip.isPresent()) {
+            // Kiểm tra xem đã có trip đã có rating chưa, chưa có -> add vào, có rồi -> phản hồi lại customer web
+            if (ratingRepository.findByTripId(request.getTripId()).isEmpty()) {
+                Rating newRating = new Rating();
+                newRating.setRatingId(UUID.randomUUID().toString());
+                newRating.setTripId(request.getTripId());
+                newRating.setRating(request.getRating());
+                newRating.setFeedback(request.getFeedback());
+
+                ratingRepository.save(newRating);
+
+                return ResponseEntity.ok("Rating submitted successfully.");
+            } else {
+                return ResponseEntity.ok("The trip has a rating!");
+            }
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Trip not found.");
         }
     }
 

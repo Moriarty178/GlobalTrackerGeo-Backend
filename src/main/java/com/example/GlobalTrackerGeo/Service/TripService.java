@@ -144,7 +144,7 @@ public class TripService {
             System.out.println("jsonSource: " + jsonSource);
             // Chuyển source vừa lấy -> Location
             Location location = Location.convertJsonToLocation(jsonSource);
-            System.out.println("lat, lon source -> location:" + location.getLat() + ", " +  location.getLon());// in thử sau khi convert
+            System.out.println("After convert JSON to Location, location:" + location.getLat() + ", " +  location.getLon());// in thử sau khi convert
         } else {
             throw new IOException("Error convertJsonToLocation");
         }
