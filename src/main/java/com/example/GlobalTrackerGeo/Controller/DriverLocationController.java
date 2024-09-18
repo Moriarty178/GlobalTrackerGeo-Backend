@@ -104,7 +104,7 @@ public class DriverLocationController {
             if ("accepted".equals(driverResponse)) {
                 double estimatedTime = 15.0;//calculateEstimatedTime(driverRequest.getDistance());
                 // Lưu trip và payment tương ứng vào database
-                tripService.saveNewTrip(driverRequest);
+                tripService.saveNewTrip(driverRequest, "search"); // status trip "2"
 
                 // Test chuyển đổi chuỗi source, destiantion trong PostgreSQL -> Location
                 tripService.getLocationFromJsonDb("1e065510-29dc-47a1-8075-abb3544b5e06");
@@ -122,7 +122,11 @@ public class DriverLocationController {
             } else {
                 return ResponseEntity.ok(java.util.Map.of("status", "declined"));
             }
-        } catch (TimeoutException | InterruptedException | ExecutionException e) {
+        } catch (TimeoutException e) { // Trường hợp tài xế không phản hồi trong 15 giây
+            return ResponseEntity.ok(java.util.Map.of("status", "timeout", "message", "Driver did not respond in time."));
+//            return ResponseEntity.status(HttpStatus.REQUEST_TIMEOUT)// gửi mã code 408 -> fe nhận là lỗi -> catch
+//                    .body(java.util.Map.of("status", "timeout", "message", "Driver did not respond in time."));
+        } catch (InterruptedException | ExecutionException e) {
             return ResponseEntity.status(HttpStatus.REQUEST_TIMEOUT).body("Driver response timed out.");
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -134,6 +138,46 @@ public class DriverLocationController {
         driverService.handleDriverResponse(driverResponse.getDriverId(), driverResponse.getStatus());
     }
 
+    @PostMapping("/request-driver-v2") // Khi customer ấn "create" -> payment form -> backend
+    public ResponseEntity<?> requestDriverV2(@RequestBody DriverRequest driverRequest) {
+        // Tạo trip và payment lưu vào database và láy trip để khi tài xế ấn "accepted" => update
+        Trip newTrip = tripService.saveNewTrip(driverRequest, "create"); // status trip "1" & driverId "null"
+
+        // Tìm kiếm tài xế gần loc_source <=> search-drivers
+        List<DriverDTO> driverList = driverService.findNearestDrivers(driverRequest.getLoc_source());
+        System.out.println("Driver List size:" + driverList.size());
+
+        // Lặp qua danh sách tài xế đề xuất -> gửi yêu cầu cho tài xế -> return khi response = "accepted"
+        for (DriverDTO driver : driverList) {
+            // Gửi thông tin và chờ phản hồi
+            messagingTemplate.convertAndSend("/topic/alert/" + driver.getDriverId(), driverRequest);
+
+            // Chờ phản hồi của tái xế
+            CompletableFuture<String> futureResponse = new CompletableFuture<>();
+            driverService.registerDriverResponseHandler(driver.getDriverId(), futureResponse);
+
+            try {
+                String driverResponse = futureResponse.get(10, TimeUnit.SECONDS); // đợi phản hồi tối đa 10s
+                double estimatedTime = 15.0;
+                // Nếu tài xế nào đồng ý thì gửi thông tin lại customer web;
+                if ("accepted".equals(driverResponse)) {
+                    // set driver
+                    tripService.updateDriver(newTrip, driver.getDriverId());
+                    return ResponseEntity.ok(java.util.Map.of(
+                            "status", "accepted",
+                            "distance", driver.getDistance(),// khoảng cách driver với loc_source
+                            "estimatedTime", estimatedTime));
+                }
+            } catch (InterruptedException | ExecutionException e) {
+                return ResponseEntity.status(HttpStatus.REQUEST_TIMEOUT).body("Driver response timed out.");
+            } catch (TimeoutException e) {
+                continue; // nếu tài xế hiện tại ko phản hồi -> TimeoutException -> continue để duyệt tiếp tài xế khác
+            }
+        }
+
+        // Nếu không tài xế nào accept hoặc không tìm được tài xế nào <=> Trip không được nhận
+        return ResponseEntity.ok(java.util.Map.of("status", "The trip has not been accepted by any driver."));
+    }
     // Lấy tất danh sách tất cả tài xế kèm vị trí trong GlobalTrackerGeo
     @GetMapping("/all-driver-location")
     public List<Map> getAllMap() {

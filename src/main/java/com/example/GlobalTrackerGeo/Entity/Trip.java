@@ -19,7 +19,7 @@ public class Trip {
     @Column(name = "customer_id", nullable = false)
     private Long customerId;
 
-    @Column(name = "driver_id", nullable = false)
+    @Column(name = "driver_id")
     private Long driverId;
 
     @Column(name = "status", nullable = false)

@@ -13,7 +13,7 @@ public class DriverRequest {//Customer Web -> Backend,customer chọn 1 tài xê
     @JsonProperty("loc_destination")
     private Location loc_destination;
 
-    private double distance;
+    private double distance;// D(loc_source, loc_destination)
 
     @JsonProperty("payment_request")
     private PaymentRequest paymentRequest;

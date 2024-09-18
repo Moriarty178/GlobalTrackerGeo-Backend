@@ -35,21 +35,49 @@ public class TripService {
     }
 
     @Transactional
-    public void saveNewTrip(DriverRequest driverRequest) {
-        Trip newTrip = new Trip();
-        String tripId = UUID.randomUUID().toString();
-        newTrip.setTripId(tripId);
-        newTrip.setDriverId(driverRequest.getDriverId());
-        newTrip.setStatus("2"); // đã có tài xế ấn accept
-        newTrip.setCustomerId(driverRequest.getCustomerId());
-        newTrip.setSource(driverRequest.getLoc_source().toString());
-        newTrip.setDestination(driverRequest.getLoc_destination().toString());
-        newTrip.setRoute(""); // Thêm các cặp (lat, lon) mỗi 5s kể từ khi tài xế bắt đầu ấn accept.
+    public Trip saveNewTrip(DriverRequest driverRequest, String button) {
+        if (button.equals("search")) {
+            Trip newTrip = new Trip();
+            String tripId = UUID.randomUUID().toString();
+            newTrip.setTripId(tripId);
+            newTrip.setDriverId(driverRequest.getDriverId());
+            newTrip.setStatus("2"); // đã có tài xế ấn accept
+            newTrip.setCustomerId(driverRequest.getCustomerId());
+            newTrip.setSource(driverRequest.getLoc_source().toString());
+            newTrip.setDestination(driverRequest.getLoc_destination().toString());
+            newTrip.setRoute(""); // Thêm các cặp (lat, lon) mỗi 5s kể từ khi tài xế bắt đầu ấn accept.
 
-        tripRepository.save(newTrip); // Lưu trip
+            tripRepository.save(newTrip); // Lưu trip
+
+            // Lưu luôn thông tin thanh toán mà người dùng chọn khi đặt trip
+            paymentService.savePayment(driverRequest.getPaymentRequest(), tripId);
+
+            return newTrip;
+        }
+
+        // Nút "Create"
+        Trip newTrip1 = new Trip();
+        String tripId1 = UUID.randomUUID().toString();
+        newTrip1.setTripId(tripId1);
+        newTrip1.setDriverId(null);
+        newTrip1.setStatus("1"); // đã có tài xế ấn accept
+        newTrip1.setCustomerId(driverRequest.getCustomerId());
+        newTrip1.setSource(driverRequest.getLoc_source().toString());
+        newTrip1.setDestination(driverRequest.getLoc_destination().toString());
+        newTrip1.setRoute(""); // Thêm các cặp (lat, lon) mỗi 5s kể từ khi tài xế bắt đầu ấn accept.
+
+        tripRepository.save(newTrip1); // Lưu trip
 
         // Lưu luôn thông tin thanh toán mà người dùng chọn khi đặt trip
-        paymentService.savePayment(driverRequest.getPaymentRequest(), tripId);
+        paymentService.savePayment(driverRequest.getPaymentRequest(), tripId1);
+
+        return newTrip1;
+    }
+
+    // Update driver khi tài xế ấn accept (nút create)
+    public void updateDriver(Trip newTrip, Long driverId) {
+        newTrip.setDriverId(driverId);
+        tripRepository.save(newTrip);
     }
 
     // Thêm địa chỉ mới (lat, lon) vào route của bảng trip
@@ -154,6 +182,7 @@ public class TripService {
             throw new IOException("Error convertJsonToLocation");
         }
     }
+
 
 }
 
