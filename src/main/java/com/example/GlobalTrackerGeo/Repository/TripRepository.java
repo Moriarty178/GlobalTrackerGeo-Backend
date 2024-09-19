@@ -2,6 +2,7 @@ package com.example.GlobalTrackerGeo.Repository;
 
 import com.example.GlobalTrackerGeo.Entity.Trip;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
@@ -14,4 +15,7 @@ public interface TripRepository extends JpaRepository<Trip, String> {
     Page<Trip> findByCustomerId(Long customerId, Pageable pageable);
     // Lấy phân trang có sort (driver)
     Page<Trip> findByDriverId(Long driverId, Pageable pageable);
+
+    Page<Trip> findByStatus(String status, PageRequest pageRequest);
+
 }

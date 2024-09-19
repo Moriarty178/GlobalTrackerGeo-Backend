@@ -72,6 +72,18 @@ public class TripController {
         }
     }
 
+    @PostMapping("/trip-list")
+    public ResponseEntity<List<Trip>> getTripListNone (@RequestBody Map<String, Integer> request) {
+        // Tạo mọt PageRequest với phân trang và sắp xếp
+        int offset = request.get("offsetList");
+        PageRequest pageRequest = PageRequest.of(offset, 10, Sort.by(Sort.Order.desc("createdAt"), Sort.Order.desc("distance")));
+
+        // Láy danh sách chuyến đi với điều kiện phân trang
+        Page<Trip> trips = tripRepository.findByStatus("1", pageRequest);
+
+        return ResponseEntity.ok(trips.getContent());
+    }
+
     @PostMapping("/cancel")
     public ResponseEntity<String> cancelTrip(@RequestBody Map<String, String> request) {
         try {
