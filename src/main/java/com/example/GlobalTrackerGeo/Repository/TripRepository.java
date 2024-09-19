@@ -10,6 +10,8 @@ import java.util.List;
 public interface TripRepository extends JpaRepository<Trip, String> {
     // Láy all có sort, Hoặc dùng jpql "query..."
     List<Trip> findByCustomerIdOrderByStatusAscCreatedAtAsc(Long customerId);
-    // Láy phân trang có sort
+    // Láy phân trang có sort (customer)
     Page<Trip> findByCustomerId(Long customerId, Pageable pageable);
+    // Lấy phân trang có sort (driver)
+    Page<Trip> findByDriverId(Long driverId, Pageable pageable);
 }

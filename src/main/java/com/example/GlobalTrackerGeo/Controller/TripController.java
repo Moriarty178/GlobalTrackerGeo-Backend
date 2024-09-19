@@ -1,9 +1,6 @@
 package com.example.GlobalTrackerGeo.Controller;
 
-import com.example.GlobalTrackerGeo.Dto.LocationNoName;
-import com.example.GlobalTrackerGeo.Dto.RatingRequest;
-import com.example.GlobalTrackerGeo.Dto.RequestCancelTrip;
-import com.example.GlobalTrackerGeo.Dto.TripRequest;
+import com.example.GlobalTrackerGeo.Dto.*;
 import com.example.GlobalTrackerGeo.Entity.Payment;
 import com.example.GlobalTrackerGeo.Entity.Rating;
 import com.example.GlobalTrackerGeo.Entity.Trip;
@@ -36,18 +33,43 @@ public class TripController {
     @Autowired
     private RatingRepository ratingRepository;
 
-    @PostMapping("/my-trips")
+    @PostMapping("/my-trips") // customer web
     public ResponseEntity<List<Trip>> getMyTrips(@RequestBody TripRequest tripRequest) {
-        Long customerId = tripRequest.getCustomerId();
+        Long customerId = tripRequest.getId();
         int offset = tripRequest.getOffset(); // số trang (pageNumber)
 
         // Tạo một PageRequest với phân trang và sắp xếp
         PageRequest pageRequest = PageRequest.of(offset, 10, Sort.by(Sort.Order.asc("status"), Sort.Order.desc("createdAt")));
 
-        // Lấy danh sách chuyến đi với điều kiện sắp xếp và phân trang
+        // Lấy danh sách chuyến đi với điều kiện sắp xếp và phân trang (trip có customerId) - customer đặt
         Page<Trip> trips = tripRepository.findByCustomerId(customerId, pageRequest);
 
         return ResponseEntity.ok(trips.getContent());
+    }
+
+    @PostMapping("/trips-received") // driver web
+    public ResponseEntity<List<Trip>> getTripsReceived(@RequestBody TripRequest tripRequest) {
+        Long driverId = tripRequest.getId();
+        int offset = tripRequest.getOffset();
+
+        // Tạo một Pagerequest với phân trang và sắp xếp
+        PageRequest pageRequest = PageRequest.of(offset, 10, Sort.by(Sort.Order.asc("status"), Sort.Order.desc("createdAt")));
+
+        // Lấy danh sách chuyến đi với điều kiện phân trang (trip có driverId) - driver đã nận
+        Page<Trip> trips = tripRepository.findByDriverId(driverId, pageRequest);
+
+        return ResponseEntity.ok(trips.getContent());
+    }
+
+    @PostMapping("/update-status-trip")
+    public ResponseEntity<?> updateStatusTrip(@RequestBody UpdateStatusRequest updateStatusRequest) {
+        try {
+            tripService.updateStatus(updateStatusRequest.getTripId(), updateStatusRequest.getDriverId(), updateStatusRequest.getStatus());
+
+            return ResponseEntity.ok("Trip updated successfully.");
+        } catch (Exception e) {
+            return ResponseEntity.ok("Error updating trip.");
+        }
     }
 
     @PostMapping("/cancel")

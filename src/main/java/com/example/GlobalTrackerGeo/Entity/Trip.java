@@ -31,6 +31,9 @@ public class Trip {
     @Column(name = "destination", nullable = false)
     private String destination;
 
+    @Column(name = "distance", nullable = false)
+    private Double distance;
+
     @Column(name = "route", columnDefinition = "TEXT")
     private String route;  // Lưu chuỗi JSON của các vị trí
 
@@ -83,6 +86,14 @@ public class Trip {
 
     public void setDestination(String destination) {
         this.destination = destination;
+    }
+
+    public Double getDistance() {
+        return distance;
+    }
+
+    public void setDistance(Double distance) {
+        this.distance = distance;
     }
 
     public String getRoute() {

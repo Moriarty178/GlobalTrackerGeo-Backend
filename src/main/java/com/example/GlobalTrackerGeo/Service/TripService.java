@@ -45,6 +45,7 @@ public class TripService {
             newTrip.setCustomerId(driverRequest.getCustomerId());
             newTrip.setSource(driverRequest.getLoc_source().toString());
             newTrip.setDestination(driverRequest.getLoc_destination().toString());
+            newTrip.setDistance(driverRequest.getDistance());
             newTrip.setRoute(""); // Thêm các cặp (lat, lon) mỗi 5s kể từ khi tài xế bắt đầu ấn accept.
 
             tripRepository.save(newTrip); // Lưu trip
@@ -64,6 +65,7 @@ public class TripService {
         newTrip1.setCustomerId(driverRequest.getCustomerId());
         newTrip1.setSource(driverRequest.getLoc_source().toString());
         newTrip1.setDestination(driverRequest.getLoc_destination().toString());
+        newTrip1.setDistance(driverRequest.getDistance());
         newTrip1.setRoute(""); // Thêm các cặp (lat, lon) mỗi 5s kể từ khi tài xế bắt đầu ấn accept.
 
         tripRepository.save(newTrip1); // Lưu trip
@@ -184,5 +186,24 @@ public class TripService {
     }
 
 
+    public void updateStatus(String tripId, Long driverId, String status) {
+        Optional<Trip> optionalTrip = tripRepository.findById(tripId);
+        if (optionalTrip.isPresent()) {
+            Trip trip = optionalTrip.get();
+            if ("1".equals(status)) {
+                trip.setStatus(status); // update status
+                trip.setDriverId(null); // driverId null để tài xế khác có thể nhận
+                tripRepository.save(trip); // lưu lại
+            } else if ("2".equals(status)){
+                trip.setStatus(status);
+                trip.setDriverId(driverId); // set driver vừa nhận
+                tripRepository.save(trip);
+            } else {
+                trip.setStatus(status);
+                tripRepository.save(trip);
+            }
+
+        }
+    }
 }
 
