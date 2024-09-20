@@ -14,6 +14,8 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -32,6 +34,9 @@ public class TripController {
     private TripRepository tripRepository;
     @Autowired
     private RatingRepository ratingRepository;
+    @Autowired
+    private SimpMessagingTemplate messagingTemplate;
+
 
     @PostMapping("/my-trips") // customer web
     public ResponseEntity<List<Trip>> getMyTrips(@RequestBody TripRequest tripRequest) {
@@ -118,6 +123,12 @@ public class TripController {
         } else {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Trip not found.");
         }
+    }
+
+    @MessageMapping("/driver-location-with-trip")
+    public void sendDriverLocationToCustomerWeb(@RequestBody DriverLocationDTO driverLocationDTO) {
+        // Gửi thông tin vị trí tài xế đến Customer Web
+        messagingTemplate.convertAndSend("/topic/location-send-to-customer-web/" + driverLocationDTO.getDriverId(), driverLocationDTO);
     }
 
     // Láy thông tin chi tiết của một trip cụ thể

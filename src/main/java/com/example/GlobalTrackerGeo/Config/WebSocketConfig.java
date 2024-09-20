@@ -23,6 +23,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     public void registerStompEndpoints(StompEndpointRegistry registry) {
         //Đăng ký các STOMP endpoints
         registry.addEndpoint("ws/driver").setAllowedOrigins("*");
+        registry.addEndpoint("ws/customer").setAllowedOrigins("*");
         registry.addEndpoint("ws/admin").setAllowedOrigins("*");
     }
 }
