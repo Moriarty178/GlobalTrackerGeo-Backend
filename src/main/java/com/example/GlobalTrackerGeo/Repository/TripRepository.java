@@ -1,11 +1,14 @@
 package com.example.GlobalTrackerGeo.Repository;
 
 import com.example.GlobalTrackerGeo.Entity.Trip;
+import io.lettuce.core.dynamic.annotation.Param;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 public interface TripRepository extends JpaRepository<Trip, String> {
@@ -18,4 +21,6 @@ public interface TripRepository extends JpaRepository<Trip, String> {
 
     Page<Trip> findByStatus(String status, PageRequest pageRequest);
 
+    @Query("SELECT t.status FROM Trip t WHERE t.driverId = :driverId AND t.createdAt BETWEEN :startOfDay AND :endOfDay")
+    List<String> findStatusesByDriverId(@Param("driverId") Long driverId, @Param("startOfDay")LocalDateTime startOfDay, @Param("endOfDay") LocalDateTime endOfDay);
 }

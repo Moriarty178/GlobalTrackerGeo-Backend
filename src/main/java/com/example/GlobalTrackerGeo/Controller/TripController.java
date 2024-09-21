@@ -18,6 +18,9 @@ import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -129,6 +132,21 @@ public class TripController {
     public void sendDriverLocationToCustomerWeb(@RequestBody DriverLocationDTO driverLocationDTO) {
         // Gửi thông tin vị trí tài xế đến Customer Web
         messagingTemplate.convertAndSend("/topic/location-send-to-customer-web/" + driverLocationDTO.getDriverId(), driverLocationDTO);
+    }
+
+    @GetMapping("/{driverId}/trips-status")
+    public ResponseEntity<List<String>> getTripStatuses(@PathVariable Long driverId) {
+        // Lấy ngày hiện tại
+        LocalDate today = LocalDate.now();
+
+        // Lấy thời điểm đầu ngày và cuối ngày
+        LocalDateTime startOfDay = today.atStartOfDay();
+        LocalDateTime endOfDay = today.atTime(LocalTime.MAX);
+        List<String> statuses = tripRepository.findStatusesByDriverId(driverId, startOfDay, endOfDay);
+        if (statuses.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null); // Trả về 404
+        }
+        return ResponseEntity.ok(statuses);
     }
 
     // Láy thông tin chi tiết của một trip cụ thể

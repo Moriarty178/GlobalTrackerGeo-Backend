@@ -123,6 +123,8 @@ public class DriverLocationController {
                 return ResponseEntity.ok(java.util.Map.of("status", "declined"));
             }
         } catch (TimeoutException e) { // Trường hợp tài xế không phản hồi trong 15 giây
+            // Lưu trip status "1" khi tài xế không phản hôi
+            //tripService.saveNewTrip(driverRequest, "create");
             return ResponseEntity.ok(java.util.Map.of("status", "timeout", "message", "Driver did not respond in time."));
 //            return ResponseEntity.status(HttpStatus.REQUEST_TIMEOUT)// gửi mã code 408 -> fe nhận là lỗi -> catch
 //                    .body(java.util.Map.of("status", "timeout", "message", "Driver did not respond in time."));

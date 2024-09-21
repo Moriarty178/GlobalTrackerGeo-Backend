@@ -186,6 +186,7 @@ public class TripService {
     }
 
 
+    @Transactional  // đảm bảo các thay đổi được thực hiện trong một giao dịch (transactional)
     public void updateStatus(String tripId, Long driverId, String status) {
         Optional<Trip> optionalTrip = tripRepository.findById(tripId);
         if (optionalTrip.isPresent()) {
