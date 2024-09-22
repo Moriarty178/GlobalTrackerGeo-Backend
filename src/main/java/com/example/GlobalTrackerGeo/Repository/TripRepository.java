@@ -22,5 +22,5 @@ public interface TripRepository extends JpaRepository<Trip, String> {
     Page<Trip> findByStatus(String status, PageRequest pageRequest);
 
     @Query("SELECT t.status FROM Trip t WHERE t.driverId = :driverId AND t.createdAt BETWEEN :startOfDay AND :endOfDay")
-    List<String> findStatusesByDriverId(@Param("driverId") Long driverId, @Param("startOfDay")LocalDateTime startOfDay, @Param("endOfDay") LocalDateTime endOfDay);
+    List<String> findStatusesByDriverId(@Param("driverId") Long driverId, @Param("startOfDay") LocalDateTime startOfDay, @Param("endOfDay") LocalDateTime endOfDay);
 }

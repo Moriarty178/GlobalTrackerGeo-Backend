@@ -31,7 +31,7 @@ public class Trip {
     @Column(name = "destination", nullable = false)
     private String destination;
 
-    @Column(name = "distance", nullable = false)
+    @Column(name = "distance", columnDefinition = "NUMERIC(10, 2)",nullable = false)
     private Double distance;
 
     @Column(name = "route", columnDefinition = "TEXT")

@@ -120,6 +120,7 @@ public class TripService {
             if (trip.getStatus().equals("1") || trip.getStatus().equals("2")) {
                 // Cập nhật trạng thái đã hủy status "5"
                 trip.setStatus("5");
+                trip.setDriverId(null);
                 tripRepository.save(trip);
 
                 // Gửi thông báo đến cho Driver Web đơn tripId bị hủy qua WebSocket (có thể dể bên backend)

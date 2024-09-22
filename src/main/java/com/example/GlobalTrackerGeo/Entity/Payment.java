@@ -19,13 +19,13 @@ public class Payment {
     @Column(name = "trip_id", nullable = false)
     private String tripId;
 
-    @Column(name = "price", nullable = false)
+    @Column(name = "price", columnDefinition = "NUMERIC(10, 2)", nullable = false)
     private Double price;
 
-    @Column(name = "voucher")
+    @Column(name = "voucher", columnDefinition = "NUMERIC(10, 2)")
     private Double voucher;
 
-    @Column(name = "total", nullable = false)
+    @Column(name = "total", columnDefinition = "NUMERIC(10, 2)", nullable = false)
     private Double total;
 
     @Column(name = "payment_status", nullable = false)
