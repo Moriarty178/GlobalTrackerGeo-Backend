@@ -1,7 +1,7 @@
 package com.example.GlobalTrackerGeo.Service;
 
 import com.example.GlobalTrackerGeo.Dto.DriverLocationDTO;
-import com.example.GlobalTrackerGeo.Entity.Map;
+import com.example.GlobalTrackerGeo.Entity.MapDriver;
 import com.example.GlobalTrackerGeo.Repository.MapRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,15 +18,15 @@ public class MapService {
     @Transactional
     public void saveOrUpdateDriverLocationToMap(DriverLocationDTO location) {
         // Kiểm tra 'Map'
-        Map driverInTheMap = mapRepository.findByDriverId(location.getDriverId());
+        MapDriver driverInTheMapDriver = mapRepository.findByDriverId(location.getDriverId());
         // Nếu driverID tồn tại => cập nhật location
-        if (driverInTheMap != null) {
-            driverInTheMap.setLatitude(location.getLatitude());
-            driverInTheMap.setLongitude(location.getLongitude());
-            mapRepository.save(driverInTheMap);
+        if (driverInTheMapDriver != null) {
+            driverInTheMapDriver.setLatitude(location.getLatitude());
+            driverInTheMapDriver.setLongitude(location.getLongitude());
+            mapRepository.save(driverInTheMapDriver);
         } else {  // Nếu driverID ko có -> tạo mới
-            Map addNewDriverToMap = new Map(location.getDriverId(), location.getLatitude(), location.getLongitude());
-            mapRepository.save(addNewDriverToMap);
+            MapDriver addNewDriverToMapDriver = new MapDriver(location.getDriverId(), location.getLatitude(), location.getLongitude());
+            mapRepository.save(addNewDriverToMapDriver);
         }
     }
 
@@ -35,7 +35,7 @@ public class MapService {
         mapRepository.deleteByDriverId(driverId);
     }
 
-    public List<Map> getAllDriverActive() {
+    public List<MapDriver> getAllDriverActive() {
         return mapRepository.findAll();
     }
 }

@@ -3,14 +3,11 @@ package com.example.GlobalTrackerGeo.Service;
 import com.example.GlobalTrackerGeo.Dto.DriverLocationDTO;
 import com.example.GlobalTrackerGeo.Entity.Driver;
 import com.example.GlobalTrackerGeo.Entity.DriverLocation;
-import com.example.GlobalTrackerGeo.Entity.Map;
 import com.example.GlobalTrackerGeo.Repository.DriverLocationRepository;
 import com.example.GlobalTrackerGeo.Repository.DriverRepository;
 import com.example.GlobalTrackerGeo.Repository.MapRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;

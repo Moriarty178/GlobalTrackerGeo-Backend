@@ -23,4 +23,16 @@ public interface TripRepository extends JpaRepository<Trip, String> {
 
     @Query("SELECT t.status FROM Trip t WHERE t.driverId = :driverId AND t.createdAt BETWEEN :startOfDay AND :endOfDay")
     List<String> findStatusesByDriverId(@Param("driverId") Long driverId, @Param("startOfDay") LocalDateTime startOfDay, @Param("endOfDay") LocalDateTime endOfDay);
+
+    // Running Trips (status = "2", "3")
+    @Query("SELECT COUNT(t) FROM Trip t WHERE t.status = '2' OR t.status = '3'")
+    long countRunningTrips();
+    // Canceled Trips (status = "5")
+    @Query("SELECT COUNT(t) FROM Trip t WHERE t.status = '5'")
+    long countCanceledTrips();
+    // Completed Trips (status = "5")
+    @Query("SELECT COUNT(t) FROM Trip t WHERE t.status = '4'")
+    long countCompletedTrips();
+    // Total Trips
+    long count();
 }

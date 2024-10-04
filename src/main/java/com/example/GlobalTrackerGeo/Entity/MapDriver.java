@@ -4,7 +4,7 @@ import jakarta.persistence.*;
 
 @Entity
 @Table(name = "map")
-public class Map {
+public class MapDriver {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -20,10 +20,10 @@ public class Map {
     @Column(name = "longitude", nullable = false)
     private double longitude;
 
-    public Map(){ // cho JPA
+    public MapDriver(){ // cho JPA
 
     }
-    public Map(long driverId, double latitude, double longitude) {
+    public MapDriver(long driverId, double latitude, double longitude) {
         this.driverId = driverId;
         this.latitude = latitude;
         this.longitude = longitude;

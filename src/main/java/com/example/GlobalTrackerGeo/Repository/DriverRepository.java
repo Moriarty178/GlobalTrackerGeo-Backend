@@ -7,4 +7,8 @@ import java.util.Optional;
 
 public interface DriverRepository extends JpaRepository<Driver, Long> {
     Driver findByEmail(String email);
+
+    // Total drivers
+    long count();
+
 }

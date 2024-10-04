@@ -1,6 +1,8 @@
 package com.example.GlobalTrackerGeo.Service;
 
+import com.example.GlobalTrackerGeo.Entity.Customer;
 import com.example.GlobalTrackerGeo.Entity.Driver;
+import com.example.GlobalTrackerGeo.Repository.CustomerRepository;
 import com.example.GlobalTrackerGeo.Repository.DriverRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -15,6 +17,8 @@ public class CustomUserDetailsService implements UserDetailsService {
 
     @Autowired
     private DriverRepository driverRepository;
+    @Autowired
+    private CustomerRepository customerRepository;
 
 
     @Override
@@ -23,7 +27,13 @@ public class CustomUserDetailsService implements UserDetailsService {
         //Tìm tài xế theo email trong cơ sở dữ liệu
         Driver driver = driverRepository.findByEmail(email);
         if(driver == null) {
-            throw new UsernameNotFoundException("Driver not found with email: " + email);
+            //Tìm tài xế theo email trong cơ sở dữ liệu
+            Customer customer = customerRepository.findByEmail(email);
+            if(customer == null) {
+                throw new UsernameNotFoundException("Customer not found with email: " + email);
+            }
+            //Trả về đối tượng UserDetails với thông tin customer
+            return new org.springframework.security.core.userdetails.User(customer.getEmail(), customer.getPassword(), new ArrayList<>());
         }
 
         //Trả về đối tượng UserDetails với thông tin driver

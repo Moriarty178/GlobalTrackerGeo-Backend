@@ -47,7 +47,7 @@ public class TripController {
         int offset = tripRequest.getOffset(); // số trang (pageNumber)
 
         // Tạo một PageRequest với phân trang và sắp xếp
-        PageRequest pageRequest = PageRequest.of(offset, 10, Sort.by(Sort.Order.asc("status"), Sort.Order.desc("createdAt")));
+        PageRequest pageRequest = PageRequest.of(offset, 6, Sort.by(Sort.Order.asc("status"), Sort.Order.desc("createdAt")));
 
         // Lấy danh sách chuyến đi với điều kiện sắp xếp và phân trang (trip có customerId) - customer đặt
         Page<Trip> trips = tripRepository.findByCustomerId(customerId, pageRequest);

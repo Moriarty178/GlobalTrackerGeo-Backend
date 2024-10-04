@@ -12,13 +12,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
-import org.springframework.security.core.parameters.P;
 import org.springframework.web.bind.annotation.*;
 
-import java.io.IOException;
 import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -107,10 +103,10 @@ public class DriverLocationController {
                 tripService.saveNewTrip(driverRequest, "search"); // status trip "2"
 
                 // Test chuyển đổi chuỗi source, destiantion trong PostgreSQL -> Location
-                tripService.getLocationFromJsonDb("1e065510-29dc-47a1-8075-abb3544b5e06");
+//                tripService.getLocationFromJsonDb("1e065510-29dc-47a1-8075-abb3544b5e06");
 
                 // Test add route
-                tripService.updateTripRoute("1e065510-29dc-47a1-8075-abb3544b5e06", 25.0285, 132.6789);
+//                tripService.updateTripRoute("1e065510-29dc-47a1-8075-abb3544b5e06", 25.0285, 132.6789);
 
                 return ResponseEntity.ok(java.util.Map.of(
                         "status", "accepted",
@@ -130,8 +126,6 @@ public class DriverLocationController {
 //                    .body(java.util.Map.of("status", "timeout", "message", "Driver did not respond in time."));
         } catch (InterruptedException | ExecutionException e) {
             return ResponseEntity.status(HttpStatus.REQUEST_TIMEOUT).body("Driver response timed out.");
-        } catch (IOException e) {
-            throw new RuntimeException(e);
         }
     }
     @MessageMapping("/driver-response")
@@ -182,7 +176,7 @@ public class DriverLocationController {
     }
     // Lấy tất danh sách tất cả tài xế kèm vị trí trong GlobalTrackerGeo
     @GetMapping("/all-driver-location")
-    public List<Map> getAllMap() {
+    public List<MapDriver> getAllMap() {
         //return mapRepository.findAll();
         return mapService.getAllDriverActive();
     }
@@ -191,6 +185,7 @@ public class DriverLocationController {
     @PostMapping("/logout")
     public ResponseEntity<?> handleDriverLogout(@RequestBody LogoutRequest logoutRequest) {
         long driverId = logoutRequest.getDriverId();
+        System.out.println("Driver ID need remove:" + driverId);
 
         // Ví dụ: xóa vị trí của tài ế trong Redis, một danh sách lưu vị trí tài xế được cập nhật theo Admin Map. Có thể sử dụng danh sách, Redis này để sau này làm phần đề xuất, điều hướng.
         //redisTemplate.delete("driver:" + driverId);
@@ -202,6 +197,13 @@ public class DriverLocationController {
         messagingTemplate.convertAndSend("/topic/remove-driver", driverId);
 
         return ResponseEntity.ok("Driver logged out successfully.");
+    }
+
+    @PostMapping("/customer-logout")
+    public ResponseEntity<?> handleCustomerLogout(@RequestBody java.util.Map<String, Long> request) {
+        long customer = request.get("customerId");
+
+        return ResponseEntity.ok("Customer logged out successfully.");
     }
 
     //private boolean shouldSendAlert(DriverLocationDTO location) {...}

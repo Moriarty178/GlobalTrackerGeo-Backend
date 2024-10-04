@@ -5,13 +5,13 @@ import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "drivers")
-public class Driver {
+@Table(name = "customers")
+public class Customer {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "driver_id")
-    private Long driverId;
+    @Column(name = "customer_id")
+    private Long customerId;
 
     @Column(name = "first_name", length = 255, nullable = false)
     private String firstName;
@@ -19,7 +19,7 @@ public class Driver {
     @Column(name = "last_name", length = 255, nullable = false)
     private String lastName;
 
-    @Column(name = "email",length = 255,nullable = false)
+    @Column(name = "email", length = 255, nullable = false)
     private String email;
 
     @Column(name = "phone", length = 255, nullable = false)
@@ -28,18 +28,19 @@ public class Driver {
     @Column(name = "password", length = 255, nullable = false)
     private String password;
 
-    @Column(name = "created_at")
+    @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
 
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
-    public Long getDriverId() {
-        return driverId;
+
+    public Long getCustomerId() {
+        return customerId;
     }
 
-    public void setDriverId(Long driverId) {
-        this.driverId = driverId;
+    public void setCustomerId(Long customerId) {
+        this.customerId = customerId;
     }
 
     public String getFirstName() {

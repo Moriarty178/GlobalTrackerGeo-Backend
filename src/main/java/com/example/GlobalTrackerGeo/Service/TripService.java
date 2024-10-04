@@ -79,6 +79,7 @@ public class TripService {
     // Update driver khi tài xế ấn accept (nút create)
     public void updateDriver(Trip newTrip, Long driverId) {
         newTrip.setDriverId(driverId);
+        newTrip.setStatus("2");
         tripRepository.save(newTrip);
     }
 

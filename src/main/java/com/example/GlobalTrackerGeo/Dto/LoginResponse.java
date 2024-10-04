@@ -2,11 +2,11 @@ package com.example.GlobalTrackerGeo.Dto;
 
 public class LoginResponse {// Driver Web -> Backend
     private String jwt;
-    private long driverId;
+    private long id;
 
-    public LoginResponse(String jwt, long driverId) {
+    public LoginResponse(String jwt, long id) {
         this.jwt = jwt;
-        this.driverId = driverId;
+        this.id = id;
     }
 
     public String getJwt() {
@@ -17,11 +17,11 @@ public class LoginResponse {// Driver Web -> Backend
         this.jwt = jwt;
     }
 
-    public long getDriverId() {
-        return driverId;
+    public long getId() {
+        return id;
     }
 
-    public void setDriverId(long driverId) {
-        this.driverId = driverId;
+    public void setId(long driverId) {
+        this.id = driverId;
     }
 }
