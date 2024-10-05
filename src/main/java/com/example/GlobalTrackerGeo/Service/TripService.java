@@ -13,6 +13,7 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -34,6 +35,7 @@ public class TripService {
         this.objectMapper = objectMapper;
     }
 
+    // Customer
     @Transactional
     public Trip saveNewTrip(DriverRequest driverRequest, String button) {
         if (button.equals("search")) {
@@ -76,7 +78,7 @@ public class TripService {
         return newTrip1;
     }
 
-    // Update driver khi tài xế ấn accept (nút create)
+    // Driver Update driver khi tài xế ấn accept (nút create)
     public void updateDriver(Trip newTrip, Long driverId) {
         newTrip.setDriverId(driverId);
         newTrip.setStatus("2");
@@ -111,7 +113,7 @@ public class TripService {
         return null;
     }
 
-    // Cancel Trip
+    // Customer Cancel Trip
     public void cancelTrip(String tripId) {
         Optional<Trip> optionalTrip = tripRepository.findById(tripId);
         if (optionalTrip.isPresent()) {
@@ -188,6 +190,7 @@ public class TripService {
     }
 
 
+    // Driver click Get It, Cancel, Received, Completed
     @Transactional  // đảm bảo các thay đổi được thực hiện trong một giao dịch (transactional)
     public void updateStatus(String tripId, Long driverId, String status) {
         Optional<Trip> optionalTrip = tripRepository.findById(tripId);
@@ -207,6 +210,11 @@ public class TripService {
             }
 
         }
+    }
+
+    // Admin Web
+    public List<Trip> getTripsByStatusAndDateRange(LocalDateTime startDate, LocalDateTime endDate) {
+        return tripRepository.findTripsByStatusAndDateRange(startDate, endDate);
     }
 }
 

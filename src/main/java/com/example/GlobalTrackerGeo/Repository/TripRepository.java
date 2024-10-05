@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 public interface TripRepository extends JpaRepository<Trip, String> {
-    // Láy all có sort, Hoặc dùng jpql "query..."
+    // Láy all có sort, Hoặc dùng JPQL "query..."
     List<Trip> findByCustomerIdOrderByStatusAscCreatedAtAsc(Long customerId);
     // Láy phân trang có sort (customer)
     Page<Trip> findByCustomerId(Long customerId, Pageable pageable);
@@ -35,4 +35,8 @@ public interface TripRepository extends JpaRepository<Trip, String> {
     long countCompletedTrips();
     // Total Trips
     long count();
+
+    // Lấy tất cả trips với trong khoảng thời gian 12 tháng
+    @Query("SELECT t FROM Trip t WHERE t.createdAt >= :startDate AND t.createdAt <= :endDate ORDER BY t.createdAt DESC")
+    List<Trip> findTripsByStatusAndDateRange(LocalDateTime startDate, LocalDateTime endDate);
 }

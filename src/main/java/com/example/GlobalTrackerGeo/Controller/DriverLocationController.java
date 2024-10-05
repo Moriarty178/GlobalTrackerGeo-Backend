@@ -80,10 +80,6 @@ public class DriverLocationController {
 
     @PostMapping("/request-driver")
     public ResponseEntity<?> requestDriver(@RequestBody DriverRequest driverRequest) {
-        //System.out.println("loc_source latitude:" + driverRequest.getLoc_source().getLat());
-        //System.out.println("loc_source longitude:" + driverRequest.getLoc_source().getLon());
-        //System.out.println("loc_source displayname:" + driverRequest.getLoc_source().getDisplayName());
-        // Gửi thông tin đơn hàng (driverRequest) đến tái xế qua websocket
         messagingTemplate.convertAndSend("/topic/alert/" + driverRequest.getDriverId(), driverRequest);
 
         // Thêm phần thời gian chờ = 10s. Sau 10s tài xế ko ấn thì phản hồi lại cho customer để chọn tài xế khác ??????????
