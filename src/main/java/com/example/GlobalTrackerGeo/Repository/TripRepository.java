@@ -39,4 +39,7 @@ public interface TripRepository extends JpaRepository<Trip, String> {
     // Lấy tất cả trips với trong khoảng thời gian 12 tháng
     @Query("SELECT t FROM Trip t WHERE t.createdAt >= :startDate AND t.createdAt <= :endDate ORDER BY t.createdAt DESC")
     List<Trip> findTripsByStatusAndDateRange(LocalDateTime startDate, LocalDateTime endDate);
+
+    // Recent Ride
+    List<Trip> findTop10ByOrderByCreatedAtDesc();
 }

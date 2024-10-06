@@ -207,4 +207,20 @@ public class TripController {
         return response;
     }
 
+    // Recent Ride + Load more, back
+    @GetMapping("/recent-rides")
+    public ResponseEntity<Map<String, Object>> getRecentRides(
+            @RequestParam(defaultValue = "0") int offset,
+            @RequestParam(defaultValue = "10") int limit
+        ){
+        List<TripToAdmin> trips = tripService.getRecentRides(offset, limit);
+        Long total = tripRepository.count();
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("rides", trips);
+        response.put("total", total);
+
+        return ResponseEntity.ok(response);
+    }
+
 }

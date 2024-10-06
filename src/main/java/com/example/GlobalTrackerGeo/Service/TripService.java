@@ -9,6 +9,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
@@ -29,12 +30,15 @@ public class TripService {
     private SimpMessagingTemplate messagingTemplate;
     @Autowired
     private PaymentService paymentService;
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
 
     public TripService(TripRepository tripRepository, ObjectMapper objectMapper) {
         this.tripRepository = tripRepository;
         this.objectMapper = objectMapper;
     }
 
+    // ------------------- CUSTOMER -----------------------
     // Customer
     @Transactional
     public Trip saveNewTrip(DriverRequest driverRequest, String button) {
@@ -123,7 +127,7 @@ public class TripService {
             if (trip.getStatus().equals("1") || trip.getStatus().equals("2")) {
                 // Cập nhật trạng thái đã hủy status "5"
                 trip.setStatus("5");
-                trip.setDriverId(null);
+//                trip.setDriverId(null);
                 tripRepository.save(trip);
 
                 // Gửi thông báo đến cho Driver Web đơn tripId bị hủy qua WebSocket (có thể dể bên backend)
@@ -189,7 +193,7 @@ public class TripService {
         }
     }
 
-
+    // ------------------- DRIVER ---------------------
     // Driver click Get It, Cancel, Received, Completed
     @Transactional  // đảm bảo các thay đổi được thực hiện trong một giao dịch (transactional)
     public void updateStatus(String tripId, Long driverId, String status) {
@@ -212,9 +216,43 @@ public class TripService {
         }
     }
 
-    // Admin Web
+    // ---------------------- ADMIN -----------------------
+    // Ride Statistic
     public List<Trip> getTripsByStatusAndDateRange(LocalDateTime startDate, LocalDateTime endDate) {
         return tripRepository.findTripsByStatusAndDateRange(startDate, endDate);
+    }
+
+    // Recent Ride
+//    public List<Trip> getRecentRides() {
+//        return tripRepository.findTop10ByOrderByCreatedAtDesc();
+//    }
+
+    public List<TripToAdmin> getRecentRides(int offset, int limit) {
+        // Câu truy vấn có thêm điều kiện OFFSET và LIMIT
+        String sql = "SELECT t.trip_id, t.customer_id, CONCAT(c.first_name, ' ', c.last_name) AS customer_name, " +
+                "t.driver_id, CONCAT(d.first_name, ' ', d.last_name) AS driver_name, t.status, t.source, " +
+                "t.destination, t.distance, t.route, t.created_at " +
+                "FROM trips t " +
+                "LEFT JOIN customers c ON t.customer_id = c.customer_id " +
+                "LEFT JOIN drivers d ON t.driver_id = d.driver_id " +
+                "WHERE t.status != '1' " +
+                "ORDER BY t.created_at DESC " +
+                "LIMIT ? OFFSET ?";
+
+        // Sử dụng jdbcTemplate để truyền tham số offset và limit
+        return jdbcTemplate.query(sql, new Object[]{limit, offset}, (rs, rowNum) -> new TripToAdmin(
+                rs.getString("trip_id"),
+                rs.getLong("customer_id"),
+                rs.getString("customer_name"),
+                rs.getLong("driver_id"),
+                rs.getString("driver_name"),
+                rs.getString("status"),
+                rs.getString("source"),
+                rs.getString("destination"),
+                rs.getDouble("distance"),
+                rs.getString("route"),
+                rs.getTimestamp("created_at").toLocalDateTime()
+        ));
     }
 }
 
