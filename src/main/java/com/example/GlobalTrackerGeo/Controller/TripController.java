@@ -1,16 +1,20 @@
 package com.example.GlobalTrackerGeo.Controller;
 
 import com.example.GlobalTrackerGeo.Dto.*;
+import com.example.GlobalTrackerGeo.Entity.Customer;
 import com.example.GlobalTrackerGeo.Entity.Payment;
 import com.example.GlobalTrackerGeo.Entity.Rating;
 import com.example.GlobalTrackerGeo.Entity.Trip;
+import com.example.GlobalTrackerGeo.Repository.CustomerRepository;
 import com.example.GlobalTrackerGeo.Repository.PaymentRepository;
 import com.example.GlobalTrackerGeo.Repository.RatingRepository;
 import com.example.GlobalTrackerGeo.Repository.TripRepository;
+import com.example.GlobalTrackerGeo.Service.CustomerService;
 import com.example.GlobalTrackerGeo.Service.TripService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -28,6 +32,8 @@ import java.util.stream.Collectors;
 @RequestMapping("/trips")
 public class TripController {
 
+    @Autowired
+    private CustomerService customerService;
     @Autowired
     private TripService tripService;
 
@@ -203,7 +209,7 @@ public class TripController {
                 Collections.singletonMap("data", statusDataMap.get("4"))  // Completed Rides
         ));
 
-        System.out.println(response);
+//        System.out.println(response);
         return response;
     }
 
@@ -213,14 +219,46 @@ public class TripController {
             @RequestParam(defaultValue = "0") int offset,
             @RequestParam(defaultValue = "10") int limit
         ){
-        List<TripToAdmin> trips = tripService.getRecentRides(offset, limit);
-        Long total = tripRepository.count();
+//        List<TripToAdmin> trips = tripService.getRecentRides(offset, limit);
+//        Long total = tripRepository.countTripsNotStatus1();
+//
+//        Map<String, Object> response = new HashMap<>();
+//        response.put("rides", trips);
+//        response.put("total", total);
+
+        return ResponseEntity.ok(tripService.getRecentRides(offset, limit));
+    }
+
+    // Customer controller
+    @GetMapping("/riders")
+    public ResponseEntity<Map<String, Object>> getRiders(
+            @RequestParam(defaultValue = "0") int offset,
+            @RequestParam(defaultValue = "10") int limit
+        ) {
+
+        return ResponseEntity.ok(customerService.getRidersForAdmin(offset, limit));
+    }
+
+    // RideHistory
+    @GetMapping("/{riderId}/history")
+    public ResponseEntity<Map<String, Object>> getTripHistory(@PathVariable long riderId, @RequestParam(defaultValue = "0") int offset, @RequestParam(defaultValue = "10") int limit) {
+        // Tạo một PageRequest với phân trang và sắp xếp
+        PageRequest pageRequest = PageRequest.of(offset, limit, Sort.by(Sort.Order.asc("status"), Sort.Order.desc("createdAt")));
+
+        Page<Trip> tripHistory = tripRepository.findByCustomerId(riderId, pageRequest);
 
         Map<String, Object> response = new HashMap<>();
-        response.put("rides", trips);
-        response.put("total", total);
-
+        response.put("total", tripRepository.countTripsByCustomerId(riderId));
+        response.put("rides", tripHistory.getContent());
         return ResponseEntity.ok(response);
+    }
+
+    // RiderStatus
+    @PostMapping("/riders/{riderId}/status")
+    public ResponseEntity<?> updateRiderStatus(@PathVariable long riderId, @RequestBody Map<String, String> statusMap) {
+        String newStatus = statusMap.get("status");
+        customerService.updateRiderStatus(riderId, newStatus);
+        return ResponseEntity.ok("Status updated successfully.");
     }
 
 }

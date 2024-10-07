@@ -1,7 +1,6 @@
 package com.example.GlobalTrackerGeo.Service;
 
 import com.example.GlobalTrackerGeo.Dto.*;
-import com.example.GlobalTrackerGeo.Entity.Payment;
 import com.example.GlobalTrackerGeo.Entity.Trip;
 import com.example.GlobalTrackerGeo.Repository.TripRepository;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -15,10 +14,7 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 @Service
 public class TripService {
@@ -227,7 +223,7 @@ public class TripService {
 //        return tripRepository.findTop10ByOrderByCreatedAtDesc();
 //    }
 
-    public List<TripToAdmin> getRecentRides(int offset, int limit) {
+    public Map<String, Object> getRecentRides(int offset, int limit) {
         // Câu truy vấn có thêm điều kiện OFFSET và LIMIT
         String sql = "SELECT t.trip_id, t.customer_id, CONCAT(c.first_name, ' ', c.last_name) AS customer_name, " +
                 "t.driver_id, CONCAT(d.first_name, ' ', d.last_name) AS driver_name, t.status, t.source, " +
@@ -240,7 +236,7 @@ public class TripService {
                 "LIMIT ? OFFSET ?";
 
         // Sử dụng jdbcTemplate để truyền tham số offset và limit
-        return jdbcTemplate.query(sql, new Object[]{limit, offset}, (rs, rowNum) -> new TripToAdmin(
+        List<TripToAdmin> trips = jdbcTemplate.query(sql, new Object[]{limit, offset}, (rs, rowNum) -> new TripToAdmin(
                 rs.getString("trip_id"),
                 rs.getLong("customer_id"),
                 rs.getString("customer_name"),
@@ -253,6 +249,12 @@ public class TripService {
                 rs.getString("route"),
                 rs.getTimestamp("created_at").toLocalDateTime()
         ));
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("rides", trips);
+        response.put("total", tripRepository.countTripsNotStatus1());
+
+        return response;
     }
 }
 

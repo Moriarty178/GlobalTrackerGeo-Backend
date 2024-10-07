@@ -28,12 +28,30 @@ public class Customer {
     @Column(name = "password", length = 255, nullable = false)
     private String password;
 
+    @Column(name = "status", length = 255, nullable = false)
+    private String status;
+
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
 
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
+    public Customer(Long customerId, String firstName, String lastName, String email, String phone, String password, String status, LocalDateTime createdAt, LocalDateTime updatedAt) {
+        this.customerId = customerId;
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.email = email;
+        this.phone = phone;
+        this.password = password;
+        this.status = status;
+        this.createdAt = createdAt;
+        this.updatedAt = updatedAt;
+    }
+
+    public Customer() {
+
+    }
 
     public Long getCustomerId() {
         return customerId;
@@ -81,6 +99,14 @@ public class Customer {
 
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
     }
 
     public LocalDateTime getCreatedAt() {
