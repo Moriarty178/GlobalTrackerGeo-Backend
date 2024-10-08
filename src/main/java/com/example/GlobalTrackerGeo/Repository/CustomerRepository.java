@@ -1,7 +1,9 @@
 package com.example.GlobalTrackerGeo.Repository;
 
 import com.example.GlobalTrackerGeo.Entity.Customer;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
@@ -14,6 +16,6 @@ public interface CustomerRepository extends JpaRepository<Customer, Long> {
     // Total customers
     long count();
 
-    @Query("SELECT c FROM Customer c ORDER BY c.status DESC, c.createdAt DESC")
-    List<Customer> findRidersWithPagination(PageRequest pageRequest);
+    @Query("SELECT c FROM Customer c ORDER BY CASE WHEN c.status = 'Active' THEN 0 ELSE 1 END, c.createdAt DESC")
+    Page<Customer> findRidersWithPagination(Pageable pageable);
 }

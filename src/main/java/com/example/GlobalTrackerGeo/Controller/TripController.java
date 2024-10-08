@@ -35,6 +35,8 @@ public class TripController {
     @Autowired
     private CustomerService customerService;
     @Autowired
+    private CustomerRepository customerRepository;
+    @Autowired
     private TripService tripService;
 
     @Autowired
@@ -200,16 +202,23 @@ public class TripController {
                     .collect(Collectors.toList()));
         }
 
+        // Kết hợp Running Rides (status 2 và 3)
+        List<Long> runningRidesData = labels.stream()
+                .map(label -> statusDataMap.getOrDefault("2", new ArrayList<>()).get(labels.indexOf(label))
+                        + statusDataMap.getOrDefault("3", new ArrayList<>()).get(labels.indexOf(label)))
+                .toList();
+
         // Tạo cấu trúc dữ liệu trả về frontend
         Map<String, Object> response = new HashMap<>();
         response.put("labels", labels);
         response.put("datasets", Arrays.asList(
-                Collections.singletonMap("data", statusDataMap.get("2")), // Running Rides
+                Collections.singletonMap("data", runningRidesData), // Running Rides
                 Collections.singletonMap("data", statusDataMap.get("5")), // Canceled Rides
                 Collections.singletonMap("data", statusDataMap.get("4"))  // Completed Rides
         ));
 
-//        System.out.println(response);
+//        System.out.println("Total Running 2, 3:" + runningRidesData);
+//        System.out.println("Status 2: " + ((List<Map<String, Object>>) response.get("datasets")).get(0));
         return response;
     }
 
@@ -243,22 +252,62 @@ public class TripController {
     @GetMapping("/{riderId}/history")
     public ResponseEntity<Map<String, Object>> getTripHistory(@PathVariable long riderId, @RequestParam(defaultValue = "0") int offset, @RequestParam(defaultValue = "10") int limit) {
         // Tạo một PageRequest với phân trang và sắp xếp
-        PageRequest pageRequest = PageRequest.of(offset, limit, Sort.by(Sort.Order.asc("status"), Sort.Order.desc("createdAt")));
+        PageRequest pageRequest = PageRequest.of(offset, limit, Sort.by(Sort.Order.desc("status"), Sort.Order.desc("createdAt")));
 
         Page<Trip> tripHistory = tripRepository.findByCustomerId(riderId, pageRequest);
 
         Map<String, Object> response = new HashMap<>();
         response.put("total", tripRepository.countTripsByCustomerId(riderId));
         response.put("rides", tripHistory.getContent());
+
+//        System.out.println("offset : limit <==>" + offset + " : " + limit);
+//        System.out.println("Size ====" + tripHistory.getContent().size());
+
         return ResponseEntity.ok(response);
     }
 
     // RiderStatus
     @PostMapping("/riders/{riderId}/status")
     public ResponseEntity<?> updateRiderStatus(@PathVariable long riderId, @RequestBody Map<String, String> statusMap) {
-        String newStatus = statusMap.get("status");
-        customerService.updateRiderStatus(riderId, newStatus);
-        return ResponseEntity.ok("Status updated successfully.");
+        try {
+            String newStatus = statusMap.get("status");
+            customerService.updateRiderStatus(riderId, newStatus);
+            return ResponseEntity.ok("Status updated successfully.");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error updated rider status.");
+        }
+
+    }
+
+    // Add Rider
+    @PostMapping("/riders/add")
+    public ResponseEntity<String> addRider(@RequestBody SignupRequest addRequest) {
+        try {
+            customerService.addRider(addRequest);
+            return ResponseEntity.ok("Rider added successfully.");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error adding rider.");
+        }
+//        Customer newRider = new Customer();
+//        newRider.setEmail(addRequest.getEmail());
+//        newRider.setPhone(addRequest.getPhone());
+//        newRider.setFirstName(addRequest.getFirstName());
+//        newRider.setLastName(addRequest.getLastName());
+//        newRider.setPassword(addRequest.getPassword());
+//
+//        customerRepository.save(newRider);
+//
+//        return ResponseEntity.ok("Rider added successfully.");
+    }
+
+    @PostMapping("/riders/edit")// thêm {riderId}
+    public ResponseEntity<?> EditRider(@RequestBody SignupRequest editRequest) {
+        try {
+            customerService.editRider(editRequest);
+            return ResponseEntity.ok("Rider edited successfully.");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error editing rider.");
+        }
     }
 
 }

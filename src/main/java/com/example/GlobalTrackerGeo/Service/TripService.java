@@ -233,7 +233,7 @@ public class TripService {
                 "LEFT JOIN drivers d ON t.driver_id = d.driver_id " +
                 "WHERE t.status != '1' " +
                 "ORDER BY t.created_at DESC " +
-                "LIMIT ? OFFSET ?";
+                "LIMIT ? OFFSET ?"; // offset này là startFromRecord = ? ko phải là pageNumber như mọi khi dùng PageRequest
 
         // Sử dụng jdbcTemplate để truyền tham số offset và limit
         List<TripToAdmin> trips = jdbcTemplate.query(sql, new Object[]{limit, offset}, (rs, rowNum) -> new TripToAdmin(
