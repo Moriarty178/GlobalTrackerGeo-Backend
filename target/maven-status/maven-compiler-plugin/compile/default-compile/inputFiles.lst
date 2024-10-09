@@ -2,6 +2,7 @@ D:\GlobalTrackerGeo\GlobalTrackerGeo\src\main\java\com\example\GlobalTrackerGeo\
 D:\GlobalTrackerGeo\GlobalTrackerGeo\src\main\java\com\example\GlobalTrackerGeo\Config\SecurityConfig.java
 D:\GlobalTrackerGeo\GlobalTrackerGeo\src\main\java\com\example\GlobalTrackerGeo\Config\WebSocketConfig.java
 D:\GlobalTrackerGeo\GlobalTrackerGeo\src\main\java\com\example\GlobalTrackerGeo\Controller\AuthController.java
+D:\GlobalTrackerGeo\GlobalTrackerGeo\src\main\java\com\example\GlobalTrackerGeo\Controller\DashboardController.java
 D:\GlobalTrackerGeo\GlobalTrackerGeo\src\main\java\com\example\GlobalTrackerGeo\Controller\DriverLocationController.java
 D:\GlobalTrackerGeo\GlobalTrackerGeo\src\main\java\com\example\GlobalTrackerGeo\Controller\PaymentController.java
 D:\GlobalTrackerGeo\GlobalTrackerGeo\src\main\java\com\example\GlobalTrackerGeo\Controller\TripController.java
@@ -21,12 +22,14 @@ D:\GlobalTrackerGeo\GlobalTrackerGeo\src\main\java\com\example\GlobalTrackerGeo\
 D:\GlobalTrackerGeo\GlobalTrackerGeo\src\main\java\com\example\GlobalTrackerGeo\Dto\RequestCancelTrip.java
 D:\GlobalTrackerGeo\GlobalTrackerGeo\src\main\java\com\example\GlobalTrackerGeo\Dto\SignupRequest.java
 D:\GlobalTrackerGeo\GlobalTrackerGeo\src\main\java\com\example\GlobalTrackerGeo\Dto\TripRequest.java
+D:\GlobalTrackerGeo\GlobalTrackerGeo\src\main\java\com\example\GlobalTrackerGeo\Dto\TripToAdmin.java
 D:\GlobalTrackerGeo\GlobalTrackerGeo\src\main\java\com\example\GlobalTrackerGeo\Dto\UpdateStatusRequest.java
 D:\GlobalTrackerGeo\GlobalTrackerGeo\src\main\java\com\example\GlobalTrackerGeo\Entity\Alert.java
+D:\GlobalTrackerGeo\GlobalTrackerGeo\src\main\java\com\example\GlobalTrackerGeo\Entity\Customer.java
 D:\GlobalTrackerGeo\GlobalTrackerGeo\src\main\java\com\example\GlobalTrackerGeo\Entity\Driver.java
 D:\GlobalTrackerGeo\GlobalTrackerGeo\src\main\java\com\example\GlobalTrackerGeo\Entity\DriverLocation.java
 D:\GlobalTrackerGeo\GlobalTrackerGeo\src\main\java\com\example\GlobalTrackerGeo\Entity\GeoZone.java
-D:\GlobalTrackerGeo\GlobalTrackerGeo\src\main\java\com\example\GlobalTrackerGeo\Entity\Map.java
+D:\GlobalTrackerGeo\GlobalTrackerGeo\src\main\java\com\example\GlobalTrackerGeo\Entity\MapDriver.java
 D:\GlobalTrackerGeo\GlobalTrackerGeo\src\main\java\com\example\GlobalTrackerGeo\Entity\Payment.java
 D:\GlobalTrackerGeo\GlobalTrackerGeo\src\main\java\com\example\GlobalTrackerGeo\Entity\Rating.java
 D:\GlobalTrackerGeo\GlobalTrackerGeo\src\main\java\com\example\GlobalTrackerGeo\Entity\Session.java
@@ -36,6 +39,7 @@ D:\GlobalTrackerGeo\GlobalTrackerGeo\src\main\java\com\example\GlobalTrackerGeo\
 D:\GlobalTrackerGeo\GlobalTrackerGeo\src\main\java\com\example\GlobalTrackerGeo\Jwt\JwtRequestFilter.java
 D:\GlobalTrackerGeo\GlobalTrackerGeo\src\main\java\com\example\GlobalTrackerGeo\Jwt\JwtUtil.java
 D:\GlobalTrackerGeo\GlobalTrackerGeo\src\main\java\com\example\GlobalTrackerGeo\Repository\AlertRepository.java
+D:\GlobalTrackerGeo\GlobalTrackerGeo\src\main\java\com\example\GlobalTrackerGeo\Repository\CustomerRepository.java
 D:\GlobalTrackerGeo\GlobalTrackerGeo\src\main\java\com\example\GlobalTrackerGeo\Repository\DriverLocationRepository.java
 D:\GlobalTrackerGeo\GlobalTrackerGeo\src\main\java\com\example\GlobalTrackerGeo\Repository\DriverRepository.java
 D:\GlobalTrackerGeo\GlobalTrackerGeo\src\main\java\com\example\GlobalTrackerGeo\Repository\GeoZoneRepository.java
@@ -44,7 +48,9 @@ D:\GlobalTrackerGeo\GlobalTrackerGeo\src\main\java\com\example\GlobalTrackerGeo\
 D:\GlobalTrackerGeo\GlobalTrackerGeo\src\main\java\com\example\GlobalTrackerGeo\Repository\RatingRepository.java
 D:\GlobalTrackerGeo\GlobalTrackerGeo\src\main\java\com\example\GlobalTrackerGeo\Repository\SessionRepository.java
 D:\GlobalTrackerGeo\GlobalTrackerGeo\src\main\java\com\example\GlobalTrackerGeo\Repository\TripRepository.java
+D:\GlobalTrackerGeo\GlobalTrackerGeo\src\main\java\com\example\GlobalTrackerGeo\Service\CustomerService.java
 D:\GlobalTrackerGeo\GlobalTrackerGeo\src\main\java\com\example\GlobalTrackerGeo\Service\CustomUserDetailsService.java
+D:\GlobalTrackerGeo\GlobalTrackerGeo\src\main\java\com\example\GlobalTrackerGeo\Service\DashboardService.java
 D:\GlobalTrackerGeo\GlobalTrackerGeo\src\main\java\com\example\GlobalTrackerGeo\Service\DriverLocationService.java
 D:\GlobalTrackerGeo\GlobalTrackerGeo\src\main\java\com\example\GlobalTrackerGeo\Service\DriverService.java
 D:\GlobalTrackerGeo\GlobalTrackerGeo\src\main\java\com\example\GlobalTrackerGeo\Service\MapService.java

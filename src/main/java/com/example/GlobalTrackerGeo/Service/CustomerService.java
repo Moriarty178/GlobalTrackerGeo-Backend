@@ -7,11 +7,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 
 @Service
@@ -51,14 +53,18 @@ public class CustomerService {
         customerRepository.save(newRider);
     }
 
-    public void editRider(SignupRequest editRequest) {
-        Customer customer = customerRepository.findByEmail(editRequest.getEmail());
+    public void editRider(long riderId, SignupRequest formData) {
+        Optional<Customer> optionalRider = customerRepository.findById(riderId);
+        if (optionalRider.isPresent()) {
+            Customer updateRider = optionalRider.get();
 
-        customer.setFirstName(editRequest.getFirstName());
-        customer.setLastName(editRequest.getLastName());
-        customer.setPhone(editRequest.getPhone());
-        customer.setPassword(editRequest.getPassword());
+            updateRider.setEmail(formData.getEmail());
+            updateRider.setPhone(formData.getPhone());
+            updateRider.setFirstName(formData.getFirstName());
+            updateRider.setLastName(formData.getLastName());
+            updateRider.setPassword(formData.getPassword());
 
-        customerRepository.save(customer);
+            customerRepository.save(updateRider);
+        }
     }
 }

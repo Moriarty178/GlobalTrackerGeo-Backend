@@ -11,6 +11,7 @@ import com.example.GlobalTrackerGeo.Repository.RatingRepository;
 import com.example.GlobalTrackerGeo.Repository.TripRepository;
 import com.example.GlobalTrackerGeo.Service.CustomerService;
 import com.example.GlobalTrackerGeo.Service.TripService;
+import org.apache.coyote.Response;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -69,9 +70,9 @@ public class TripController {
             tripService.cancelTrip(request.get("tripId"));
             // Thông báo cho tài xế qua websocket, dùng luôn "/topic/alert + driverId" thêm phần type = "cancelTrip"
 
-            return ResponseEntity.ok("Trip canceled successfully!");
+            return ResponseEntity.ok("Trip canceled successfully.");
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error canceling trip");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error canceling trip!");
         }
     }
 
@@ -96,7 +97,7 @@ public class TripController {
                 return ResponseEntity.ok("The trip has a rating!");
             }
         } else {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Trip not found.");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Trip not found!");
         }
     }
 
@@ -145,7 +146,7 @@ public class TripController {
 
             return ResponseEntity.ok("Trip updated successfully.");
         } catch (Exception e) {
-            return ResponseEntity.ok("Error updating trip.");
+            return ResponseEntity.ok("Error updating trip!");
         }
     }
 
@@ -274,7 +275,7 @@ public class TripController {
             customerService.updateRiderStatus(riderId, newStatus);
             return ResponseEntity.ok("Status updated successfully.");
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error updated rider status.");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error updated rider status!");
         }
 
     }
@@ -286,7 +287,7 @@ public class TripController {
             customerService.addRider(addRequest);
             return ResponseEntity.ok("Rider added successfully.");
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error adding rider.");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error adding rider!");
         }
 //        Customer newRider = new Customer();
 //        newRider.setEmail(addRequest.getEmail());
@@ -300,14 +301,57 @@ public class TripController {
 //        return ResponseEntity.ok("Rider added successfully.");
     }
 
-    @PostMapping("/riders/edit")// thêm {riderId}
-    public ResponseEntity<?> EditRider(@RequestBody SignupRequest editRequest) {
-        try {
-            customerService.editRider(editRequest);
-            return ResponseEntity.ok("Rider edited successfully.");
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error editing rider.");
-        }
+//    @PostMapping("/riders/edit")// thêm {riderId}
+//    public ResponseEntity<?> editRider(@RequestBody SignupRequest editRequest) {
+//        try {
+//            customerService.editRider(editRequest);
+//            return ResponseEntity.ok("Rider edited successfully.");
+//        } catch (Exception e) {
+//            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error editing rider!");
+//        }
+//    }
+
+    // Lấy formData của riderId lên cho edit rider
+    @GetMapping("/riders/{riderId}")
+    public ResponseEntity<?> getRiderDetails (@PathVariable long riderId) {
+        return ResponseEntity.ok(customerRepository.findById(riderId));
     }
 
+    // Edit rider
+    @PutMapping("/riders/{riderId}")
+    public ResponseEntity<?> editRider (@PathVariable long riderId, @RequestBody SignupRequest formData) {
+        try {
+            customerService.editRider(riderId, formData);
+            return ResponseEntity.ok("Edited rider successfully.");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error editing rider!");
+        }
+
+//        Optional<Customer> optionalRider = customerRepository.findById(riderId);
+//        if (optionalRider.isPresent()) {
+//            Customer updateRider = optionalRider.get();
+//
+//            updateRider.setEmail(formData.getEmail());
+//            updateRider.setPhone(formData.getPhone());
+//            updateRider.setFirstName(formData.getFirstName());
+//            updateRider.setLastName(formData.getLastName());
+//            updateRider.setPassword(formData.getPassword());
+//
+//            customerRepository.save(updateRider);
+//            return ResponseEntity.ok("Updated rider successfully.");
+//        }
+//
+//        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Not found rider wid riderID:" + riderId);
+    }
+
+    // Delete rider
+    @DeleteMapping("/riders/{riderId}")
+    public ResponseEntity<?> deleteRider(@PathVariable long riderId) {
+        try {
+            customerRepository.deleteById(riderId);
+            return ResponseEntity.ok("Deleted rider successfully.");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error deleting rider with riderId: " + riderId);
+        }
+    }
 }
