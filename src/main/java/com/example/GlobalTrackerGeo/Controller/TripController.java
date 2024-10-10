@@ -26,6 +26,7 @@ import org.springframework.web.bind.annotation.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -189,11 +190,19 @@ public class TripController {
 
         // Nhóm các chuyến đi theo tháng và theo status
         Map<String, Map<String, Long>> ridesGroupedByMonthAndStatus = trips.stream()
-                .collect(Collectors.groupingBy(trip -> trip.getCreatedAt().getYear() + "-" + trip.getCreatedAt().getMonthValue(),
+                .collect(Collectors.groupingBy(trip -> trip.getCreatedAt().getYear() + "-" + String.format("%02d", trip.getCreatedAt().getMonthValue()),
                         Collectors.groupingBy(Trip::getStatus, Collectors.counting())));
 
         // Chuẩn bị dữ liệu để gửi cho biểu đồ
-        List<String> labels = ridesGroupedByMonthAndStatus.keySet().stream().sorted().collect(Collectors.toList());
+        List<String> labels = ridesGroupedByMonthAndStatus.keySet().stream()
+                .sorted(Comparator.comparing(label -> LocalDate.parse(label + "-01", DateTimeFormatter.ofPattern("yyyy-MM-dd"))))
+                .collect(Collectors.toList());
+
+        //List<String> labels = ridesGroupedByMonthAndStatus.keySet().stream().sorted().collect(Collectors.toList());
+        //sout -> Labels: [2011-10, 2011-12, '2012-10!!!', 2012-2, 2012-9] lỗi thứ tự, lý do:
+        //.sorted().collect(Collectors.toList() sắp xếp 'labels' theo thứ tự từ điển {lexicographical, vd: 2014-2 được sx trước 2014-10 vì theo thứ tự từ điển 2< 20 -> [2014-10, 2014-2]}
+        // thay vì đang lẽ phải theo thứ tự thời gian thực. [2014-2, 2014-10]
+
 
         // Chuẩn bị datasets cho từng loại status
         Map<String, List<Long>> statusDataMap = new HashMap<>();
@@ -218,10 +227,10 @@ public class TripController {
                 Collections.singletonMap("data", statusDataMap.get("4"))  // Completed Rides
         ));
 
-//        System.out.println("Total Running 2, 3:" + runningRidesData);
-//        System.out.println("Status 2: " + ((List<Map<String, Object>>) response.get("datasets")).get(0));
+        System.out.println("Labels (Sorted): " + labels);
         return response;
     }
+
 
     // Recent Ride + Load more, back
     @GetMapping("/recent-rides")
