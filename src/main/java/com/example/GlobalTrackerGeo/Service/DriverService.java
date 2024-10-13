@@ -1,17 +1,15 @@
 package com.example.GlobalTrackerGeo.Service;
 
-import com.example.GlobalTrackerGeo.Dto.DriverDTO;
-import com.example.GlobalTrackerGeo.Dto.DriverResponse;
-import com.example.GlobalTrackerGeo.Dto.Location;
+import com.example.GlobalTrackerGeo.Dto.*;
+import com.example.GlobalTrackerGeo.Entity.Driver;
+import com.example.GlobalTrackerGeo.Repository.DriverRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RequestBody;
 
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
@@ -22,6 +20,8 @@ public class DriverService {
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
+    @Autowired
+    private DriverRepository driverRepository;
 
     public List<DriverDTO> findNearestDrivers (Location locSource) {
         // Truy vấn tất cả tài xế đang hoạt động được lưu trong 'map'
@@ -81,5 +81,60 @@ public class DriverService {
             // Xóa handler sau khi nhận được phản hồi
             driverResponseHandlers.remove(driverId);
         }
+    }
+
+    public Map<String, Object> getDrivers(int offset, int limit) {
+        // câu truy vấn sql liên qan đến bảng drivers và map trong postgreSQL
+        String sql = """
+            SELECT d.driver_id, d.first_name || ' ' || d.last_name AS driver_name, d.email, d.phone, 
+                   CASE 
+                       WHEN m.driver_id IS NOT NULL THEN 'online'
+                       ELSE 'offline'
+                   END AS online,
+                   d.status, 
+                   d.created_at
+            FROM drivers d
+            LEFT JOIN map m ON d.driver_id = m.driver_id
+            ORDER BY 
+                CASE WHEN m.driver_id IS NOT NULL THEN 0 ELSE 1 END,
+                CASE WHEN d.status = 'Approved' THEN 0 ELSE 1 END, 
+                d.created_at DESC
+            LIMIT ? OFFSET ?;
+        """;//offset : startRecord
+
+        List<DriverToAdmin> drivers = jdbcTemplate.query(sql, new Object[]{limit, offset}, (rs, rowNum) -> new DriverToAdmin(
+                rs.getLong("driver_id"),
+                rs.getString("driver_name"),
+                rs.getString("email"),
+                rs.getString("phone"),
+                rs.getString("online"),
+                rs.getString("status"),
+                rs.getTimestamp("created_at").toLocalDateTime()
+        ));
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("drivers", drivers);
+        response.put("total", driverRepository.count());
+        return response;
+    }
+
+    public void editDriver(Long driverId, SignupRequest formData) {
+        Optional<Driver> optionalDriver = driverRepository.findById(driverId);
+        if (optionalDriver.isPresent()) {
+            Driver updateDriver = optionalDriver.get();
+            updateDriver.setEmail(formData.getEmail());
+            updateDriver.setPhone(formData.getPhone());
+            updateDriver.setFirstName(formData.getFirstName());
+            updateDriver.setLastName(formData.getLastName());
+            updateDriver.setPassword(formData.getPassword());
+
+            driverRepository.save(updateDriver);
+        }
+    }
+
+    public void updateStatusDriver(Long driverId, String newStatus) {
+        Driver driver = driverRepository.findById(driverId).orElseThrow(() -> new RuntimeException("Not found driver to update"));
+        driver.setStatus(newStatus);
+        driverRepository.save(driver);
     }
 }

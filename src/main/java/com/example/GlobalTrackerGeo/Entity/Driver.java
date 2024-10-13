@@ -28,6 +28,9 @@ public class Driver {
     @Column(name = "password", length = 255, nullable = false)
     private String password;
 
+    @Column(name = "status", length = 255, nullable = false)
+    private String status;
+
     @Column(name = "created_at")
     private LocalDateTime createdAt = LocalDateTime.now();
 
@@ -80,6 +83,14 @@ public class Driver {
 
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
     }
 
     public LocalDateTime getCreatedAt() {

@@ -49,4 +49,7 @@ public interface TripRepository extends JpaRepository<Trip, String> {
 
     @Query("SELECT COUNT(t) FROM Trip t WHERE t.customerId = :riderId")
     long countTripsByCustomerId(@Param("riderId") long riderId);
+
+    @Query("SELECT COUNT(t) FROM Trip t WHERE t.driverId = :driverId")
+    long countTripsByDriverId(@Param("driverId") long driverId);
 }

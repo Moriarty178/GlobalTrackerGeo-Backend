@@ -15,6 +15,7 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -104,7 +105,7 @@ public class DriverLocationController {
                 // Test add route
 //                tripService.updateTripRoute("1e065510-29dc-47a1-8075-abb3544b5e06", 25.0285, 132.6789);
 
-                return ResponseEntity.ok(java.util.Map.of(
+                return ResponseEntity.ok(Map.of(
                         "status", "accepted",
                         "distance", driverRequest.getDistance(),
                         "estimatedTime", estimatedTime
@@ -112,14 +113,14 @@ public class DriverLocationController {
 //                        "lon", "longitude"
                 ));
             } else {
-                return ResponseEntity.ok(java.util.Map.of("status", "declined"));
+                return ResponseEntity.ok(Map.of("status", "declined"));
             }
         } catch (TimeoutException e) { // Trường hợp tài xế không phản hồi trong 15 giây
             // Lưu trip status "1" khi tài xế không phản hôi
             //tripService.saveNewTrip(driverRequest, "create");
-            return ResponseEntity.ok(java.util.Map.of("status", "timeout", "message", "Driver did not respond in time."));
+            return ResponseEntity.ok(Map.of("status", "timeout", "message", "Driver did not respond in time."));
 //            return ResponseEntity.status(HttpStatus.REQUEST_TIMEOUT)// gửi mã code 408 -> fe nhận là lỗi -> catch
-//                    .body(java.util.Map.of("status", "timeout", "message", "Driver did not respond in time."));
+//                    .body(Map.of("status", "timeout", "message", "Driver did not respond in time."));
         } catch (InterruptedException | ExecutionException e) {
             return ResponseEntity.status(HttpStatus.REQUEST_TIMEOUT).body("Driver response timed out.");
         }
@@ -155,7 +156,7 @@ public class DriverLocationController {
                 if ("accepted".equals(driverResponse)) {
                     // set driver
                     tripService.updateDriver(newTrip, driver.getDriverId());
-                    return ResponseEntity.ok(java.util.Map.of(
+                    return ResponseEntity.ok(Map.of(
                             "status", "accepted",
                             "distance", driver.getDistance(),// khoảng cách driver với loc_source
                             "estimatedTime", estimatedTime));
@@ -168,7 +169,7 @@ public class DriverLocationController {
         }
 
         // Nếu không tài xế nào accept hoặc không tìm được tài xế nào <=> Trip không được nhận
-        return ResponseEntity.ok(java.util.Map.of("status", "The trip has not been accepted by any driver."));
+        return ResponseEntity.ok(Map.of("status", "The trip has not been accepted by any driver."));
     }
     // Lấy tất danh sách tất cả tài xế kèm vị trí trong GlobalTrackerGeo
     @GetMapping("/all-driver-location")
@@ -196,7 +197,7 @@ public class DriverLocationController {
     }
 
     @PostMapping("/customer-logout")
-    public ResponseEntity<?> handleCustomerLogout(@RequestBody java.util.Map<String, Long> request) {
+    public ResponseEntity<?> handleCustomerLogout(@RequestBody Map<String, Long> request) {
         long customer = request.get("customerId");
 
         return ResponseEntity.ok("Customer logged out successfully.");

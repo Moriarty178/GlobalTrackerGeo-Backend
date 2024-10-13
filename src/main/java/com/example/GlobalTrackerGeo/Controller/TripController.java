@@ -1,18 +1,14 @@
 package com.example.GlobalTrackerGeo.Controller;
 
 import com.example.GlobalTrackerGeo.Dto.*;
-import com.example.GlobalTrackerGeo.Entity.Customer;
-import com.example.GlobalTrackerGeo.Entity.Payment;
-import com.example.GlobalTrackerGeo.Entity.Rating;
-import com.example.GlobalTrackerGeo.Entity.Trip;
-import com.example.GlobalTrackerGeo.Repository.CustomerRepository;
-import com.example.GlobalTrackerGeo.Repository.PaymentRepository;
-import com.example.GlobalTrackerGeo.Repository.RatingRepository;
-import com.example.GlobalTrackerGeo.Repository.TripRepository;
+import com.example.GlobalTrackerGeo.Entity.*;
+import com.example.GlobalTrackerGeo.Repository.*;
 import com.example.GlobalTrackerGeo.Service.CustomerService;
+import com.example.GlobalTrackerGeo.Service.DriverService;
 import com.example.GlobalTrackerGeo.Service.TripService;
 import org.apache.coyote.Response;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -40,9 +36,13 @@ public class TripController {
     private CustomerRepository customerRepository;
     @Autowired
     private TripService tripService;
+    @Autowired
+    private DriverService driverService;
 
     @Autowired
     private TripRepository tripRepository;
+    @Autowired
+    private DriverRepository driverRepository;
     @Autowired
     private RatingRepository ratingRepository;
     @Autowired
@@ -50,7 +50,7 @@ public class TripController {
 
     // -------------- CUSTOMER WEB -----------------
     // Customer bảng My Trip
-    @PostMapping("/my-trips") // customer web
+    @PostMapping("/my-trips") // customer web   REPLACE -> "{riderId}/history" *****************
     public ResponseEntity<List<Trip>> getMyTrips(@RequestBody TripRequest tripRequest) {
         Long customerId = tripRequest.getId();
         int offset = tripRequest.getOffset(); // số trang (pageNumber)
@@ -112,7 +112,7 @@ public class TripController {
 
     // --------------- DRIVER WEB ----------------
     // Driver Web bảng Trips Received
-    @PostMapping("/trips-received") // driver web
+    @PostMapping("/trips-received") // driver web  REPLACE -> "/drivers/{driverId}/history*************************
     public ResponseEntity<List<Trip>> getTripsReceived(@RequestBody TripRequest tripRequest) {
         Long driverId = tripRequest.getId();
         int offset = tripRequest.getOffset();
@@ -175,6 +175,7 @@ public class TripController {
     // ==================================================
 
     // ----------------- ADMIN WEB ---------------------
+    //----------------- Dashboard ----------->
     // Ride Status Chart
     @GetMapping("/api/ride-status-data")
     public Map<String, Object> getRideStatusData(@RequestParam int start, @RequestParam int limit) {
@@ -188,7 +189,7 @@ public class TripController {
         // Lấy danh sách các chuyến đi từ service
         List<Trip> trips = tripService.getTripsByStatusAndDateRange(startDate, endDate);
 
-        // Nhóm các chuyến đi theo tháng và theo status
+        // Nhóm các chuyến đi theo tháng và theo status// định dạng tháng yyyy-MM (%02d) đảm bảo tháng luôn có 2 chữ số
         Map<String, Map<String, Long>> ridesGroupedByMonthAndStatus = trips.stream()
                 .collect(Collectors.groupingBy(trip -> trip.getCreatedAt().getYear() + "-" + String.format("%02d", trip.getCreatedAt().getMonthValue()),
                         Collectors.groupingBy(Trip::getStatus, Collectors.counting())));
@@ -199,10 +200,7 @@ public class TripController {
                 .collect(Collectors.toList());
 
         //List<String> labels = ridesGroupedByMonthAndStatus.keySet().stream().sorted().collect(Collectors.toList());
-        //sout -> Labels: [2011-10, 2011-12, '2012-10!!!', 2012-2, 2012-9] lỗi thứ tự, lý do:
-        //.sorted().collect(Collectors.toList() sắp xếp 'labels' theo thứ tự từ điển {lexicographical, vd: 2014-2 được sx trước 2014-10 vì theo thứ tự từ điển 2< 20 -> [2014-10, 2014-2]}
-        // thay vì đang lẽ phải theo thứ tự thời gian thực. [2014-2, 2014-10]
-
+        //sout -> Labels: [2011-10, 2011-12, '2012-10!!!', 2012-2, 2012-9] lỗi thứ tự -> sx theo từ diển==> muốn dùng phải chuyển sang yyyy-mm (2024-02)
 
         // Chuẩn bị datasets cho từng loại status
         Map<String, List<Long>> statusDataMap = new HashMap<>();
@@ -236,24 +234,17 @@ public class TripController {
     @GetMapping("/recent-rides")
     public ResponseEntity<Map<String, Object>> getRecentRides(
             @RequestParam(defaultValue = "0") int offset,
-            @RequestParam(defaultValue = "10") int limit
-        ){
-//        List<TripToAdmin> trips = tripService.getRecentRides(offset, limit);
-//        Long total = tripRepository.countTripsNotStatus1();
-//
-//        Map<String, Object> response = new HashMap<>();
-//        response.put("rides", trips);
-//        response.put("total", total);
+            @RequestParam(defaultValue = "10") int limit){
 
         return ResponseEntity.ok(tripService.getRecentRides(offset, limit));
     }
 
+    //----------------- Customer tab ----------->
     // Customer controller
     @GetMapping("/riders")
     public ResponseEntity<Map<String, Object>> getRiders(
             @RequestParam(defaultValue = "0") int offset,
-            @RequestParam(defaultValue = "10") int limit
-        ) {
+            @RequestParam(defaultValue = "10") int limit){
 
         return ResponseEntity.ok(customerService.getRidersForAdmin(offset, limit));
     }
@@ -277,7 +268,7 @@ public class TripController {
     }
 
     // RiderStatus
-    @PostMapping("/riders/{riderId}/status")
+    @PutMapping("/riders/{riderId}/status")
     public ResponseEntity<?> updateRiderStatus(@PathVariable long riderId, @RequestBody Map<String, String> statusMap) {
         try {
             String newStatus = statusMap.get("status");
@@ -286,7 +277,6 @@ public class TripController {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error updated rider status!");
         }
-
     }
 
     // Add Rider
@@ -298,27 +288,7 @@ public class TripController {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error adding rider!");
         }
-//        Customer newRider = new Customer();
-//        newRider.setEmail(addRequest.getEmail());
-//        newRider.setPhone(addRequest.getPhone());
-//        newRider.setFirstName(addRequest.getFirstName());
-//        newRider.setLastName(addRequest.getLastName());
-//        newRider.setPassword(addRequest.getPassword());
-//
-//        customerRepository.save(newRider);
-//
-//        return ResponseEntity.ok("Rider added successfully.");
     }
-
-//    @PostMapping("/riders/edit")// thêm {riderId}
-//    public ResponseEntity<?> editRider(@RequestBody SignupRequest editRequest) {
-//        try {
-//            customerService.editRider(editRequest);
-//            return ResponseEntity.ok("Rider edited successfully.");
-//        } catch (Exception e) {
-//            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error editing rider!");
-//        }
-//    }
 
     // Lấy formData của riderId lên cho edit rider
     @GetMapping("/riders/{riderId}")
@@ -335,22 +305,6 @@ public class TripController {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error editing rider!");
         }
-
-//        Optional<Customer> optionalRider = customerRepository.findById(riderId);
-//        if (optionalRider.isPresent()) {
-//            Customer updateRider = optionalRider.get();
-//
-//            updateRider.setEmail(formData.getEmail());
-//            updateRider.setPhone(formData.getPhone());
-//            updateRider.setFirstName(formData.getFirstName());
-//            updateRider.setLastName(formData.getLastName());
-//            updateRider.setPassword(formData.getPassword());
-//
-//            customerRepository.save(updateRider);
-//            return ResponseEntity.ok("Updated rider successfully.");
-//        }
-//
-//        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Not found rider wid riderID:" + riderId);
     }
 
     // Delete rider
@@ -361,6 +315,89 @@ public class TripController {
             return ResponseEntity.ok("Deleted rider successfully.");
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error deleting rider with riderId: " + riderId);
+        }
+    }
+
+    //----------------- Drivers tab ----------->
+    // Drivers list
+    @GetMapping("/drivers")
+    public ResponseEntity<Map<String, Object>> getDrivers(
+            @RequestParam(defaultValue = "0") int offset,
+            @RequestParam(defaultValue = "10") int limit
+        ){
+
+        return ResponseEntity.ok(driverService.getDrivers(offset, limit));
+    }
+
+    // Add Driver
+    @PostMapping("/drivers/add")
+    public ResponseEntity<?> addDriver(@RequestBody SignupRequest signupRequest) {
+        try {
+            if (driverRepository.findByEmail(signupRequest.getEmail()) != null) {
+                return ResponseEntity.status(HttpStatus.CONFLICT).body("Email already exists, try another email!");
+            }
+            Driver newDriver = new Driver();
+            newDriver.setEmail(signupRequest.getEmail());
+            newDriver.setPassword(signupRequest.getPassword());
+            newDriver.setPhone(signupRequest.getPhone());
+            newDriver.setFirstName(signupRequest.getFirstName());
+            newDriver.setLastName(signupRequest.getLastName());
+            newDriver.setStatus("Approved");
+
+            driverRepository.save(newDriver);
+            return ResponseEntity.ok("Driver added successfully.");
+        } catch (DataIntegrityViolationException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid data provided!");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred while adding the driver!");
+        }
+    }
+
+    // Status Driver
+    @PutMapping("/drivers/{driverId}/status")
+    public ResponseEntity<?> updateStatusDriver(@PathVariable Long driverId, @RequestBody Map<String, String> statusMap) {
+        try {
+            String newStatus = statusMap.get("status");
+            driverService.updateStatusDriver(driverId, newStatus);
+            return ResponseEntity.ok("Driver status updated successfully.");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error updating status driver");
+        }
+    }
+
+    // History Driver
+    @GetMapping("/drivers/history/{driverId}")
+    public ResponseEntity<Map<String, Object>> getDriverHistory(
+            @PathVariable Long driverId,
+            @RequestParam(defaultValue = "0") int offset,
+            @RequestParam(defaultValue = "10") int limit) {
+
+        PageRequest pageRequest = PageRequest.of(offset, limit, Sort.by(Sort.Order.asc("status"), Sort.Order.asc("createdAt")));
+        Page<Trip> trips = tripRepository.findByDriverId(driverId, pageRequest);
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("trips", trips.getContent());
+        response.put("total", tripRepository.countTripsByDriverId(driverId));
+        return ResponseEntity.ok(response);
+    }
+
+    // Statement Driver
+
+
+    // get driver to Edit
+    @GetMapping("/drivers/{driverId}")
+    public ResponseEntity<?> getDriverDetail (@PathVariable Long driverId) {
+        return ResponseEntity.ok(driverRepository.findById(driverId));
+    }
+
+    // Edit Driver
+    @PutMapping("/drivers/{driverId}")
+    public ResponseEntity<?> editDriver(@PathVariable Long driverId, @RequestBody SignupRequest formData) {
+        try {
+            driverService.editDriver(driverId, formData);
+            return ResponseEntity.ok("Driver updated successfully.");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Not Found driver to update!");
         }
     }
 }
