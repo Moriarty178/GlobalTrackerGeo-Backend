@@ -12,4 +12,7 @@ public interface PaymentRepository extends JpaRepository<Payment, String> {
     // Total revenue
     @Query("SELECT SUM(p.total) FROM Payment p WHERE p.paymentStatus = 'Paid'")
     Double calculateTotalRevenue();
+
+    @Query("SELECT SUM(p.total) FROM Payment p JOIN Trip t ON p.tripId = t.tripId WHERE p.paymentStatus = 'Paid' AND t.driverId = :driverId")
+    Double calculateRevenueOfDriver(long driverId);
 }

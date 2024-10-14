@@ -46,6 +46,8 @@ public class TripController {
     @Autowired
     private RatingRepository ratingRepository;
     @Autowired
+    private PaymentRepository paymentRepository;
+    @Autowired
     private SimpMessagingTemplate messagingTemplate;
 
     // -------------- CUSTOMER WEB -----------------
@@ -381,8 +383,17 @@ public class TripController {
         return ResponseEntity.ok(response);
     }
 
-    // Statement Driver
+    // Statement Driver, get data for stats card
+    @GetMapping("/drivers/stats/{driverId}")
+    public ResponseEntity<Map<String, Object>> getStatsDriver(@PathVariable Long driverId) {
 
+        Map<String, Object> response = new HashMap<>();
+        response.put("totalTrips", tripRepository.countTripsOfDriver(driverId));
+        response.put("canceledTrips", tripRepository.countCanceledTripsOfDriver(driverId));
+        response.put("completedTrips", tripRepository.countCompletedTripsOfDriver(driverId));
+        response.put("revenue", paymentRepository.calculateRevenueOfDriver(driverId));
+        return ResponseEntity.ok(response);
+    }
 
     // get driver to Edit
     @GetMapping("/drivers/{driverId}")

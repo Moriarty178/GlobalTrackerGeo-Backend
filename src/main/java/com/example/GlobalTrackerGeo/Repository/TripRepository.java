@@ -27,14 +27,23 @@ public interface TripRepository extends JpaRepository<Trip, String> {
     // Running Trips (status = "2", "3")
     @Query("SELECT COUNT(t) FROM Trip t WHERE t.status = '2' OR t.status = '3'")
     long countRunningTrips();
+
     // Canceled Trips (status = "5")
     @Query("SELECT COUNT(t) FROM Trip t WHERE t.status = '5'")
     long countCanceledTrips();
+    @Query("SELECT COUNT(t) FROM Trip t WHERE t.status = '5' AND t.driverId = :driverId")
+    long countCanceledTripsOfDriver(@Param("driverId") long driverId);
+
     // Completed Trips (status = "5")
     @Query("SELECT COUNT(t) FROM Trip t WHERE t.status = '4'")
     long countCompletedTrips();
+    @Query("SELECT COUNT(t) FROM Trip t WHERE t.status = '4' AND t.driverId = :driverId")
+    long countCompletedTripsOfDriver(Long driverId);
+
     // Total Trips
     long count();
+    @Query("SELECT COUNT(t) FROM Trip t WHERE t.driverId = :driverId")
+    long countTripsOfDriver(long driverId);
 
     // Total Trips status != 1
     @Query("SELECT COUNT(t) FROM Trip t WHERE t.status != '1'")
