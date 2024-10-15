@@ -13,5 +13,10 @@ public interface DriverRepository extends JpaRepository<Driver, Long> {
 
     // Total drivers
     long count();
+    @Query("SELECT COUNT(d) FROM Driver d WHERE d.status = 'Pending'")
+    long countDriversUnapproved();
+
+//    @Query("SELECT d FROM Driver d WHERE d.status = 'Pending' ORDER BY createdAt DESC")
+    Page<Driver> findByStatus(String status, Pageable pageable);
 
 }

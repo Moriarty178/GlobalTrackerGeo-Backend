@@ -411,4 +411,20 @@ public class TripController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Not Found driver to update!");
         }
     }
+
+    // ------------ Un-approved tab
+    @GetMapping("/drivers/un-approved")
+    public ResponseEntity<Map<String, Object>> getDriversUnapproved(
+            @RequestParam(defaultValue = "0") int offset,
+            @RequestParam(defaultValue = "10") int limit) {
+
+        PageRequest pageRequest = PageRequest.of(offset, limit, Sort.by(Sort.Order.desc("createdAt"), Sort.Order.asc("status")));
+        Page<Driver> drivers = driverRepository.findByStatus("Pending",pageRequest);
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("drivers", drivers.getContent());
+        response.put("total", driverRepository.countDriversUnapproved());
+
+        return ResponseEntity.ok(response);
+    }
 }
