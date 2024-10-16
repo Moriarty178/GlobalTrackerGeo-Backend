@@ -48,7 +48,7 @@ public class CustomerService {
         newRider.setFirstName(addRequest.getFirstName());
         newRider.setLastName(addRequest.getLastName());
         newRider.setPassword(addRequest.getPassword());
-        newRider.setStatus("Active");
+        newRider.setStatus("Approved");
 
         customerRepository.save(newRider);
     }

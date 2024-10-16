@@ -252,7 +252,7 @@ public class TripController {
     }
 
     // RideHistory
-    @GetMapping("/{riderId}/history")
+    @GetMapping("/riders/history/{riderId}")
     public ResponseEntity<Map<String, Object>> getTripHistory(@PathVariable long riderId, @RequestParam(defaultValue = "0") int offset, @RequestParam(defaultValue = "10") int limit) {
         // Tạo một PageRequest với phân trang và sắp xếp
         PageRequest pageRequest = PageRequest.of(offset, limit, Sort.by(Sort.Order.desc("status"), Sort.Order.desc("createdAt")));
@@ -261,7 +261,7 @@ public class TripController {
 
         Map<String, Object> response = new HashMap<>();
         response.put("total", tripRepository.countTripsByCustomerId(riderId));
-        response.put("rides", tripHistory.getContent());
+        response.put("trips", tripHistory.getContent());
 
 //        System.out.println("offset : limit <==>" + offset + " : " + limit);
 //        System.out.println("Size ====" + tripHistory.getContent().size());
@@ -270,7 +270,7 @@ public class TripController {
     }
 
     // RiderStatus
-    @PutMapping("/riders/{riderId}/status")
+    @PutMapping("/riders/status/{riderId}")
     public ResponseEntity<?> updateRiderStatus(@PathVariable long riderId, @RequestBody Map<String, String> statusMap) {
         try {
             String newStatus = statusMap.get("status");
@@ -299,7 +299,7 @@ public class TripController {
     }
 
     // Edit rider
-    @PutMapping("/riders/{riderId}")
+    @PutMapping("/riders/edit/{riderId}")
     public ResponseEntity<?> editRider (@PathVariable long riderId, @RequestBody SignupRequest formData) {
         try {
             customerService.editRider(riderId, formData);
@@ -356,7 +356,7 @@ public class TripController {
     }
 
     // Status Driver
-    @PutMapping("/drivers/{driverId}/status")
+    @PutMapping("/drivers/status/{driverId}")
     public ResponseEntity<?> updateStatusDriver(@PathVariable Long driverId, @RequestBody Map<String, String> statusMap) {
         try {
             String newStatus = statusMap.get("status");
@@ -402,7 +402,7 @@ public class TripController {
     }
 
     // Edit Driver
-    @PutMapping("/drivers/{driverId}")
+    @PutMapping("/drivers/edit/{driverId}")
     public ResponseEntity<?> editDriver(@PathVariable Long driverId, @RequestBody SignupRequest formData) {
         try {
             driverService.editDriver(driverId, formData);
