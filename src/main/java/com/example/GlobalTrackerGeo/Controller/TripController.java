@@ -6,6 +6,7 @@ import com.example.GlobalTrackerGeo.Repository.*;
 import com.example.GlobalTrackerGeo.Service.CustomerService;
 import com.example.GlobalTrackerGeo.Service.DriverService;
 import com.example.GlobalTrackerGeo.Service.TripService;
+import com.example.GlobalTrackerGeo.Service.VehicleService;
 import org.apache.coyote.Response;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -18,7 +19,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
+import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -38,6 +42,8 @@ public class TripController {
     private TripService tripService;
     @Autowired
     private DriverService driverService;
+    @Autowired
+    private VehicleService vehicleService;
 
     @Autowired
     private TripRepository tripRepository;
@@ -47,6 +53,8 @@ public class TripController {
     private RatingRepository ratingRepository;
     @Autowired
     private PaymentRepository paymentRepository;
+    @Autowired
+    private VehicleRepository vehicleRepository;
     @Autowired
     private SimpMessagingTemplate messagingTemplate;
 
@@ -427,4 +435,63 @@ public class TripController {
 
         return ResponseEntity.ok(response);
     }
+
+    // ------------ Vehicle Type
+    @GetMapping("/vehicles")
+    public ResponseEntity<Map<String, Object>> getVehicles(
+            @RequestParam(defaultValue = "0") int offset,
+            @RequestParam(defaultValue = "10") int limit) {
+
+        PageRequest pageRequest = PageRequest.of(offset, limit, Sort.by(Sort.Order.asc("status"), Sort.Order.desc("createdAt")));
+        Page<Vehicle> vehicles = vehicleRepository.findAll(pageRequest);
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("vehicles", vehicles.getContent());
+        response.put("total", vehicleRepository.count());
+
+        return ResponseEntity.ok(response);
+    }
+
+    // Vehicle Add
+    @PostMapping("/vehicles")
+    public ResponseEntity<String> addVehicleType(
+            @RequestParam("name") String name,
+            @RequestParam("cost") Double cost,
+            @RequestParam("status") String status,
+            @RequestParam("image") MultipartFile image) {
+
+        // Xác định vị trí lưu ảnh
+        String imagePath = "D:/GlobalTrackerGeo/images/" + image.getOriginalFilename();
+        File imageFile = new File(imagePath); // tạo đối tượng File cho phép lưu nội dung -> vào path
+
+        try {
+            // Lưu tệp ảnh
+            image.transferTo(imageFile);
+
+            // save -> db
+            vehicleService.saveVehicle(name, cost, status, image.getOriginalFilename()); // đổi tên file thành định danh duy nhất
+
+            return ResponseEntity.ok("Thêm loại xe thành công!");
+        } catch (IOException e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Có lỗi xảy ra khi tải ảnh lên.");
+        }
+    }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
