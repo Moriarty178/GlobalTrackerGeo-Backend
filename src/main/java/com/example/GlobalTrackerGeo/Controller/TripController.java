@@ -20,6 +20,7 @@ import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.io.File;
 import java.io.IOException;
@@ -454,7 +455,7 @@ public class TripController {
 
     // Vehicle Add
     @PostMapping("/vehicles")
-    public ResponseEntity<String> addVehicleType(
+    public ResponseEntity<String> addVehicleType( // bên fe gửi formData dạng Multipart/form-data -> spring có thể dùng RequestParam để ánh xạ các trường tron form (key-value) vào biến cụ thể.
             @RequestParam("name") String name,
             @RequestParam("cost") Double cost,
             @RequestParam("status") String status,
@@ -476,6 +477,75 @@ public class TripController {
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Có lỗi xảy ra khi tải ảnh lên.");
         }
+    }
+
+//    @GetMapping("/vehicles/{vehicleId}")
+//    public ResponseEntity<?> getVehicleDetail(@PathVariable Long vehicleId) {
+//        Optional<Vehicle> optionalVehicle = vehicleRepository.findById(vehicleId);
+//        if (optionalVehicle.isPresent()) {
+//            return ResponseEntity.ok(optionalVehicle.get());
+//        }
+//        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Không tìm thấy vehicle với ID: " + vehicleId);
+//    }
+    // Get Vehicle Type to Edit
+    @GetMapping("/vehicles/{vehicleId}")
+    public ResponseEntity<?> getVehicleDetail(@PathVariable Long vehicleId) {
+        return ResponseEntity.ok(vehicleRepository.findById(vehicleId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy vehicle với ID:" + vehicleId)));// nếu xử lý ngoại lệ sai, spring trả về 403 để ngăn cản truy cập tài nguyên dù tài nguyên có tồn tại
+    }
+
+    @PutMapping("/vehicles/{vehicleId}")
+    public ResponseEntity<?> editVehicle(
+            @PathVariable Long vehicleId,
+            @RequestParam("name") String name,
+            @RequestParam("cost") Double cost,
+            @RequestParam("status") String status,
+            @RequestParam(value = "image", required = false) MultipartFile image) {
+
+        Optional<Vehicle> optionalVehicle = vehicleRepository.findById(vehicleId);
+
+        if (optionalVehicle.isPresent()) {
+            Vehicle editVehicle = optionalVehicle.get();
+            editVehicle.setName(name);
+            editVehicle.setCost(cost);
+            editVehicle.setStatus(status);
+
+            // Xử lý cập nhật ảnh nếu người dùng upload ảnh mới
+            if (image != null && !image.isEmpty()) {
+                String imagePath = "D:/GlobalTrackerGeo/images/" + image.getOriginalFilename();
+                File imageFile = new File(imagePath);
+
+                try {
+                    // Lưu ảnh mới
+                    image.transferTo(imageFile);
+                    // Cập nhật tên ảnh vào database
+                    editVehicle.setImg(image.getOriginalFilename());
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Có lỗi khi sửa lại ảnh");
+                }
+            }
+
+            // Lưu thay đổi vào cơ sở dữ liệu
+            vehicleRepository.save(editVehicle);
+
+            return ResponseEntity.ok("Chỉnh sửa thành công vehicle type.");
+        }
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Không tìm thấy vehicle với vehicleID: " + vehicleId);
+    }
+
+    // Vehicles Delete
+    @DeleteMapping("/vehicles/delete/{vehicleId}")
+    public ResponseEntity<?> deleteVehicle(@PathVariable Long vehicleId) {
+        Optional<Vehicle> optionalVehicle = vehicleRepository.findById(vehicleId);
+        if (optionalVehicle.isPresent()) {
+            Vehicle deleteVehicle = optionalVehicle.get();
+
+            vehicleRepository.delete(deleteVehicle);
+
+            return ResponseEntity.ok("Deleted vehicleID :" + vehicleId);
+        }
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Not found vehicle wid ID: " + vehicleId);
     }
 }
 
