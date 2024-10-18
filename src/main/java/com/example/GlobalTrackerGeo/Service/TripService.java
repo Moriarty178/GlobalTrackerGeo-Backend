@@ -3,6 +3,7 @@ package com.example.GlobalTrackerGeo.Service;
 import com.example.GlobalTrackerGeo.Dto.*;
 import com.example.GlobalTrackerGeo.Entity.Driver;
 import com.example.GlobalTrackerGeo.Entity.Trip;
+import com.example.GlobalTrackerGeo.Repository.DriverRepository;
 import com.example.GlobalTrackerGeo.Repository.TripRepository;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -22,6 +23,7 @@ public class TripService {
 
     private TripRepository tripRepository;
     private ObjectMapper objectMapper;
+    private DriverRepository driverRepository;
 
     @Autowired
     private SimpMessagingTemplate messagingTemplate;
@@ -299,14 +301,35 @@ public class TripService {
 
     public Map<String, Object> getDriverPaymentReport(int offset, int limit) {
         String sql = """
-                """;
+            SELECT d.driver_id, CONCAT(d.first_name, ' ', d.last_name) AS driver_name, b.account_no AS driver_account_no, b.name AS driver_bank_name, 
+                COALESCE(SUM(p.total), 0) AS total_revenue, 
+                COALESCE(SUM(p.total), 0) * 0.05 AS commission, 
+                COALESCE(SUM(p.total), 0) * 0.95 AS driver_payment_amount, 
+                'cash' AS payment_method
+            FROM drivers d
+            LEFT JOIN banks b ON d.driver_id = b.driver_id
+            LEFT JOIN trips t ON d.driver_id = t.driver_id
+            LEFT JOIN payments p ON t.trip_id = p.trip_id AND p.payment_status = 'Paid' AND t.status = '4'
+            GROUP BY d.driver_id, CONCAT(d.first_name, ' ', d.last_name), b.account_no, b.name
+            ORDER BY total_revenue DESC, d.created_at DESC
+            LIMIT ? OFFSET ?;
+            """; // chỉ dùng alias sau khi nó đã được tinh toán (khác cấp) vd ORDER BY total_revenue
 
-        List<Trip> trips = jdbcTemplate.query(sql, new Object[]{limit, offset}, (rs, rowNum) -> new Trip(
-//                rs.getString("")
+        List<DriverPaymentReport> driverPaymentReports = jdbcTemplate.query(sql, new Object[]{limit, offset}, (rs, rowNum) -> new DriverPaymentReport(
+                rs.getLong("driver_id"),
+                rs.getString("driver_name"),
+                rs.getString("driver_account_no"),
+                rs.getString("driver_bank_name"),
+                rs.getDouble("total_revenue"),
+                rs.getDouble("commission"),
+                rs.getDouble("driver_payment_amount"),
+                rs.getString("payment_method")
         ));
+
         Map<String, Object> response = new HashMap<>();
-        response.put("driverPaymentReports", trips);
-        response.put("total", 17);
+        response.put("resultReports", driverPaymentReports);
+        response.put("total", 21);
+
         return response;
     }
 }

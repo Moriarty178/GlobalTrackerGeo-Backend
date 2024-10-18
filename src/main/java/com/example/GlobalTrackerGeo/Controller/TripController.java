@@ -561,7 +561,7 @@ public class TripController {
     public ResponseEntity<Map<String, Object>> getDriverPaymentReport(
             @RequestParam(defaultValue = "0") int offset,
             @RequestParam(defaultValue = "10") int limit) {
-        return ResponseEntity.ok(driverService.getDriverPaymentReport(offset, limit));
+        return ResponseEntity.ok(tripService.getDriverPaymentReport(offset, limit));
     }
 }
 
