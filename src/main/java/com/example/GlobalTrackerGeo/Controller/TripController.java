@@ -547,6 +547,22 @@ public class TripController {
         }
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Not found vehicle wid ID: " + vehicleId);
     }
+
+
+    // -------------- Earning Reports
+    @GetMapping("/earning-admin-report")
+    public ResponseEntity<Map<String, Object>> getResultReports(
+            @RequestParam(defaultValue = "0") int offset,
+            @RequestParam(defaultValue = "10") int limit) {
+        return ResponseEntity.ok(tripService.getResultReports(offset, limit));
+    }
+
+    @GetMapping("/driver-payment-report")
+    public ResponseEntity<Map<String, Object>> getDriverPaymentReport(
+            @RequestParam(defaultValue = "0") int offset,
+            @RequestParam(defaultValue = "10") int limit) {
+        return ResponseEntity.ok(driverService.getDriverPaymentReport(offset, limit));
+    }
 }
 
 

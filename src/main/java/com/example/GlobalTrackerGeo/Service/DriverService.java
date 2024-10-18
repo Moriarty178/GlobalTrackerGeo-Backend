@@ -2,6 +2,7 @@ package com.example.GlobalTrackerGeo.Service;
 
 import com.example.GlobalTrackerGeo.Dto.*;
 import com.example.GlobalTrackerGeo.Entity.Driver;
+import com.example.GlobalTrackerGeo.Entity.Trip;
 import com.example.GlobalTrackerGeo.Repository.DriverRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -136,5 +137,20 @@ public class DriverService {
         Driver driver = driverRepository.findById(driverId).orElseThrow(() -> new RuntimeException("Not found driver to update"));
         driver.setStatus(newStatus);
         driverRepository.save(driver);
+    }
+
+    public Map<String, Object> getDriverPaymentReport(int offset, int limit) {
+        String sql = """
+                """;
+
+        List<Trip> trips = jdbcTemplate.query(sql, new Object[]{limit, offset}, (rs, rowNum) -> new Trip(
+
+        ));
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("driverPaymentReports", trips);
+        response.put("total", driverRepository.count());
+
+        return response;
     }
 }

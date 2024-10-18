@@ -1,6 +1,7 @@
 package com.example.GlobalTrackerGeo.Service;
 
 import com.example.GlobalTrackerGeo.Dto.*;
+import com.example.GlobalTrackerGeo.Entity.Driver;
 import com.example.GlobalTrackerGeo.Entity.Trip;
 import com.example.GlobalTrackerGeo.Repository.TripRepository;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -204,7 +205,11 @@ public class TripService {
                 trip.setStatus(status);
                 trip.setDriverId(driverId); // set driver vừa nhận
                 tripRepository.save(trip);
-            } else {
+            } else if ("4".equals(status)) {
+                trip.setStatus(status);
+                paymentService.setStatus(tripId); // set đã thanh toán
+            }
+            else {
                 trip.setStatus(status);
                 tripRepository.save(trip);
             }
@@ -254,6 +259,54 @@ public class TripService {
         response.put("rides", trips);
         response.put("total", tripRepository.countTripsNotStatus1());
 
+        return response;
+    }
+
+    public Map<String, Object> getResultReports(int offset, int limit) {
+        String sql1 = """
+                SELECT t.trip_id, CONCAT(d.first_name, ' ', d.last_name) AS driver_name, CONCAT(c.first_name, ' ', c.last_name) AS customer_name, t.created_at, p.total AS total_revenue,
+                    p.total * 0.05 AS commission,
+                    p.total * (1 -0.05) AS driver_payment_amount,
+                    p.total * 0.05 AS admin_earning_amount,
+                    'cash' AS payment_method
+                FROM trips t 
+                    LEFT JOIN drivers d ON t.driver_id = d.driver_id
+                    LEFT JOIN customers c ON t.customer_id = c.customer_id
+                    LEFT JOIN payments p ON t.trip_id = p.trip_id
+                WHERE p.payment_status = 'Paid'
+                ORDER BY t.created_at DESC
+                LIMIT ? OFFSET ?
+                """;
+
+        List<ResultReport> resultReports = jdbcTemplate.query(sql1, new Object[]{limit, offset}, (rs, rowNum) -> new ResultReport(
+                rs.getString("trip_id"),
+                rs.getString("driver_name"),
+                rs.getString("customer_name"),// đảm bảo đúng thứ tự của class ResultReport
+                rs.getTimestamp("created_at").toLocalDateTime(),
+                rs.getDouble("total_revenue"),
+                rs.getDouble("commission"),
+                rs.getDouble("driver_payment_amount"),
+                rs.getDouble("admin_earning_amount"),
+                rs.getString("payment_method")
+        ));
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("resultReports", resultReports);
+        response.put("total", tripRepository.countCompletedTrips()); // đếm rides completed vì completed -> driver earn $
+
+        return response;
+    }
+
+    public Map<String, Object> getDriverPaymentReport(int offset, int limit) {
+        String sql = """
+                """;
+
+        List<Trip> trips = jdbcTemplate.query(sql, new Object[]{limit, offset}, (rs, rowNum) -> new Trip(
+//                rs.getString("")
+        ));
+        Map<String, Object> response = new HashMap<>();
+        response.put("driverPaymentReports", trips);
+        response.put("total", 17);
         return response;
     }
 }
