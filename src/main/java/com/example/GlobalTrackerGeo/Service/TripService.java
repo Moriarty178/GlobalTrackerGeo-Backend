@@ -4,6 +4,7 @@ import com.example.GlobalTrackerGeo.Dto.*;
 import com.example.GlobalTrackerGeo.Entity.Driver;
 import com.example.GlobalTrackerGeo.Entity.Trip;
 import com.example.GlobalTrackerGeo.Repository.DriverRepository;
+import com.example.GlobalTrackerGeo.Repository.RatingRepository;
 import com.example.GlobalTrackerGeo.Repository.TripRepository;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -21,9 +22,14 @@ import java.util.*;
 @Service
 public class TripService {
 
+    @Autowired
     private TripRepository tripRepository;
+    @Autowired
     private ObjectMapper objectMapper;
+    @Autowired
     private DriverRepository driverRepository;
+    @Autowired
+    private RatingRepository ratingRepository;
 
     @Autowired
     private SimpMessagingTemplate messagingTemplate;
@@ -32,10 +38,12 @@ public class TripService {
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
-    public TripService(TripRepository tripRepository, ObjectMapper objectMapper) {
-        this.tripRepository = tripRepository;
-        this.objectMapper = objectMapper;
-    }
+//    public TripService(TripRepository tripRepository, ObjectMapper objectMapper, DriverRepository driverRepository, RatingRepository ratingRepository) {
+//        this.tripRepository = tripRepository;
+//        this.objectMapper = objectMapper;
+//        this.driverRepository = driverRepository;
+//        this.ratingRepository = ratingRepository;
+//    }
 
     // ------------------- CUSTOMER -----------------------
     // Customer
@@ -328,7 +336,35 @@ public class TripService {
 
         Map<String, Object> response = new HashMap<>();
         response.put("resultReports", driverPaymentReports);
-        response.put("total", 21);
+        response.put("total", driverRepository.count());
+
+        return response;
+    }
+
+    public Map<String, Object> getReviewRatings(int offset, int limit) {
+        String sql = """
+                SELECT t.trip_id, r.rating_id, CONCAT(d.first_name, ' ', d.last_name) AS driver_name, CONCAT(c.first_name, ' ', c.last_name) AS customer_name, r.rating, r.created_at, r.feedback
+                FROM ratings r
+                LEFT JOIN trips t ON r.trip_id = t.trip_id
+                LEFT JOIN drivers d ON t.driver_id = d.driver_id
+                LEFT JOIN customers c ON t.customer_id = c.customer_id
+                ORDER BY r.rating DESC, r.created_at DESC 
+                LIMIT ? OFFSET ?;
+                """;
+
+        List<ReviewRating> reviewRatings = jdbcTemplate.query(sql, new Object[]{limit, offset}, (rs, rowNum) -> new ReviewRating(
+                rs.getString("trip_id"),
+                rs.getString("rating_id"),
+                rs.getString("driver_name"),
+                rs.getString("customer_name"),
+                rs.getString("rating"),
+                rs.getTimestamp("created_at").toLocalDateTime(),
+                rs.getString("feedback")
+        ));
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("reviewRatings", reviewRatings);
+        response.put("total", ratingRepository.count());
 
         return response;
     }

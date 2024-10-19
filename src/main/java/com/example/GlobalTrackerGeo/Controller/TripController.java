@@ -563,6 +563,24 @@ public class TripController {
             @RequestParam(defaultValue = "10") int limit) {
         return ResponseEntity.ok(tripService.getDriverPaymentReport(offset, limit));
     }
+
+    // ----------------- View & Ratings
+    @GetMapping("/review-rating")
+    public ResponseEntity<Map<String, Object>> getReviewRatings(
+            @RequestParam(defaultValue = "0") int offset,
+            @RequestParam(defaultValue = "10") int limit) {
+        return ResponseEntity.ok(tripService.getReviewRatings(offset, limit));
+    }
+
+    @DeleteMapping("/review-rating/delete/{ratingId}")
+    public ResponseEntity<?> deleteReviewRating(@PathVariable String ratingId) {
+        try {
+            ratingRepository.deleteById(ratingId);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Not found review rating with ID: " + ratingId);
+        }
+        return ResponseEntity.ok("Review & rating successfully removed.");
+    }
 }
 
 
