@@ -3,10 +3,7 @@ package com.example.GlobalTrackerGeo.Controller;
 import com.example.GlobalTrackerGeo.Dto.*;
 import com.example.GlobalTrackerGeo.Entity.*;
 import com.example.GlobalTrackerGeo.Repository.*;
-import com.example.GlobalTrackerGeo.Service.CustomerService;
-import com.example.GlobalTrackerGeo.Service.DriverService;
-import com.example.GlobalTrackerGeo.Service.TripService;
-import com.example.GlobalTrackerGeo.Service.VehicleService;
+import com.example.GlobalTrackerGeo.Service.*;
 import org.apache.coyote.Response;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -45,6 +42,8 @@ public class TripController {
     private DriverService driverService;
     @Autowired
     private VehicleService vehicleService;
+    @Autowired
+    private PromoCodeService promoCodeService;
 
     @Autowired
     private TripRepository tripRepository;
@@ -56,6 +55,8 @@ public class TripController {
     private PaymentRepository paymentRepository;
     @Autowired
     private VehicleRepository vehicleRepository;
+    @Autowired
+    private PromoCodeRepository promoCodeRepository;
     @Autowired
     private SimpMessagingTemplate messagingTemplate;
 
@@ -580,6 +581,40 @@ public class TripController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Not found review rating with ID: " + ratingId);
         }
         return ResponseEntity.ok("Review & rating successfully removed.");
+    }
+
+    // ------------------ Promo Code tab
+    @GetMapping("/promo-code")
+    public ResponseEntity<Map<String, Object>> getPromoCodes(
+            @RequestParam(defaultValue = "0") int offset,
+            @RequestParam(defaultValue = "10") int limit) {
+
+        return ResponseEntity.ok(promoCodeService.getPromoCodes(offset, limit));
+    }
+
+    // Add promo code
+    @PostMapping("/promo-code/add")
+    public ResponseEntity<?> addPromoCode(@RequestBody AddPromoCode addPromoCode) {
+        System.out.println("========: " + addPromoCode);
+        try {
+            PromoCode promoCode = new PromoCode();
+//            promoCode.setPromoId(UUID.randomUUID().toString());
+            promoCode.setName(addPromoCode.getName());
+            promoCode.setCode(addPromoCode.getCodeName());
+            promoCode.setType(addPromoCode.getType());
+            promoCode.setValue(addPromoCode.getValue());
+            promoCode.setUsageLimit(addPromoCode.getUsageLimit());
+            promoCode.setExpiredDate(addPromoCode.getExpiredDate());
+            promoCode.setStatus(addPromoCode.getStatus());
+
+            System.out.println("promocode after set:" + promoCode);
+
+            promoCodeRepository.save(promoCode);
+            return ResponseEntity.ok("Added successfully new promo code.");
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error adding promo code!");
+        }
     }
 }
 
