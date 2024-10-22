@@ -58,6 +58,8 @@ public class TripController {
     @Autowired
     private PromoCodeRepository promoCodeRepository;
     @Autowired
+    private NotificationRepository notificationRepository;
+    @Autowired
     private SimpMessagingTemplate messagingTemplate;
 
     // -------------- CUSTOMER WEB -----------------
@@ -652,6 +654,41 @@ public class TripController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Not found promo code to delete!");
         }
     }
+
+    // ------------ Push Notifications
+    @GetMapping("/notifications")
+    public ResponseEntity<Map<String, Object>> getNotifications(
+            @RequestParam(defaultValue = "0") int offset,
+            @RequestParam(defaultValue = "10") int limit) {
+
+        PageRequest pageRequest = PageRequest.of(offset, limit, Sort.by(Sort.Order.desc("createdAt")));
+
+        Page<Notification> notifications = notificationRepository.findAll(pageRequest);
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("notifications", notifications.getContent());
+        response.put("total", notificationRepository.count());
+
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/notifications/send")
+    public ResponseEntity<?> sendNotification(@RequestBody Notification notification) {
+        System.out.println("Title =====: " + notification.getTitle());
+        try {
+            Notification sendNotification = new Notification();
+            sendNotification.setTitle(notification.getTitle());
+            sendNotification.setSentTo(notification.getSentTo());
+            sendNotification.setMessage(notification.getMessage());
+
+            notificationRepository.save(sendNotification);
+            return ResponseEntity.ok("Notification sent successfully.");
+        } catch (Exception e) {
+            return ResponseEntity.status(400).body("Error sending message!");
+        }
+
+    }
+
 }
 
 
