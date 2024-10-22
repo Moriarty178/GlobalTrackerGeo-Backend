@@ -4,7 +4,7 @@ import java.time.LocalDateTime;
 
 public class AddPromoCode {
     private String name;
-    private String codeName;
+    private String code;
     private String type;
     private Double value;
     private Long usageLimit;
@@ -19,12 +19,12 @@ public class AddPromoCode {
         this.name = name;
     }
 
-    public String getCodeName() {
-        return codeName;
+    public String getCode() {
+        return code;
     }
 
-    public void setCodeName(String codeName) {
-        this.codeName = codeName;
+    public void setCode(String code) {
+        this.code = code;
     }
 
     public String getType() {

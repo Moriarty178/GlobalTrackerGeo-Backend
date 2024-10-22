@@ -595,25 +595,61 @@ public class TripController {
     // Add promo code
     @PostMapping("/promo-code/add")
     public ResponseEntity<?> addPromoCode(@RequestBody AddPromoCode addPromoCode) {
-        System.out.println("========: " + addPromoCode);
         try {
             PromoCode promoCode = new PromoCode();
 //            promoCode.setPromoId(UUID.randomUUID().toString());
             promoCode.setName(addPromoCode.getName());
-            promoCode.setCode(addPromoCode.getCodeName());
+            promoCode.setCode(addPromoCode.getCode());
             promoCode.setType(addPromoCode.getType());
             promoCode.setValue(addPromoCode.getValue());
             promoCode.setUsageLimit(addPromoCode.getUsageLimit());
             promoCode.setExpiredDate(addPromoCode.getExpiredDate());
             promoCode.setStatus(addPromoCode.getStatus());
 
-            System.out.println("promocode after set:" + promoCode);
-
             promoCodeRepository.save(promoCode);
             return ResponseEntity.ok("Added successfully new promo code.");
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error adding promo code!");
+        }
+    }
+
+    // Get data for Edit
+    @GetMapping("/promo-code/{promoId}")
+    public ResponseEntity<?> getPromoCodeToEdit(@PathVariable String promoId) {
+        return ResponseEntity.ok(promoCodeRepository.findById(promoId).orElseThrow(() -> new RuntimeException("Not Found promo code.")));
+    }
+
+    // Edit
+    @PutMapping("/promo-code/edit/{promoId}")
+    public ResponseEntity<?> editPromoCode(@PathVariable String promoId, @RequestBody AddPromoCode editPromoCode) {
+        Optional<PromoCode> optionalPromoCode = promoCodeRepository.findById(promoId);
+        if (optionalPromoCode.isPresent()) {
+            PromoCode promoCode = optionalPromoCode.get();
+
+            promoCode.setName(editPromoCode.getName());
+            promoCode.setCode(editPromoCode.getCode());
+            promoCode.setType(editPromoCode.getType());
+            promoCode.setValue(editPromoCode.getValue());
+            promoCode.setUsageLimit(editPromoCode.getUsageLimit());
+            promoCode.setExpiredDate(editPromoCode.getExpiredDate());
+            promoCode.setStatus(editPromoCode.getStatus());
+
+            promoCodeRepository.save(promoCode);
+            return ResponseEntity.ok("Edited successfully promo code.");
+        }
+
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Not found promo code with ID: " + promoId);
+    }
+
+    // delete
+    @DeleteMapping("/promo-code/delete/{promoId}")
+    public ResponseEntity<?> deletePromoCode (@PathVariable String promoId) {
+        try {
+            promoCodeRepository.deleteById(promoId);
+            return ResponseEntity.ok("Deleted successfully promo-code.");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Not found promo code to delete!");
         }
     }
 }
