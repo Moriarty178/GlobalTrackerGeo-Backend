@@ -15,6 +15,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
@@ -689,21 +690,119 @@ public class TripController {
 
     }
 
+    // --------------- Statement Tab
+    // Overall
+    @GetMapping("/statement")
+    public ResponseEntity<Map<String, Object>> getOverallStatement() {
+        Map<String, Object> response = new HashMap<>();
+        response.put("totalTrips", tripRepository.count());
+        response.put("canceledTrips", tripRepository.countCompletedTrips());
+        response.put("completedTrips", tripRepository.countCompletedTrips());
+        response.put("revenue", paymentRepository.calculateTotalRevenue());
+
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/statement-history")
+    public ResponseEntity<Map<String, Object>> getHistoryOverallStatement(
+            @RequestParam(defaultValue = "0") int offset,
+            @RequestParam(defaultValue = "10") int limit) {
+
+        PageRequest pageRequest = PageRequest.of(offset, limit, Sort.by(Sort.Order.desc("createdAt")));
+        Page<Trip> trips = tripRepository.findAll(pageRequest);
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("trips", trips.getContent()); // for history table
+        response.put("total", tripRepository.count()); // for history table
+        return ResponseEntity.ok(response);
+    }
+
+    // Daily
+    @GetMapping("/statement/today")
+    public ResponseEntity<Map<String, Object>> getTodayStatement(
+            @RequestParam(defaultValue = "0") int offset,
+            @RequestParam(defaultValue = "10") int limit) {
+
+        LocalDate today = LocalDate.now();
+        LocalDateTime startOfDay = today.atStartOfDay();
+        LocalDateTime endOfDay = today.atTime(LocalTime.MAX);
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("totalTrips", tripRepository.countTripsOfToday(startOfDay, endOfDay));
+        response.put("canceledTrips", tripRepository.countCanceledTripsOfDay(startOfDay, endOfDay));
+        response.put("completedTrips", tripRepository.countCompletedTripsOfDay(startOfDay, endOfDay));
+        response.put("revenue", paymentRepository.calculateTotalRevenueOfToday(startOfDay, endOfDay));
+
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/statement/today-history")
+    public ResponseEntity<Map<String, Object>> getTodayHistory(
+            @RequestParam(defaultValue = "0") int offset,
+            @RequestParam(defaultValue = "10") int limit) {
+
+        PageRequest pageRequest = PageRequest.of(offset, limit, Sort.by(Sort.Order.desc("tripId")));
+
+        LocalDate today = LocalDate.now();
+        LocalDateTime startOfDay = today.atStartOfDay();
+        LocalDateTime endOfDay = today .atTime(LocalTime.MAX);
+
+        // Láy danh sách chuyến đi trong ngày kèm theo phân trang (pageRequest)
+        Page<Trip> trips = tripRepository.findTripByCreatedAt(pageRequest, startOfDay, endOfDay);
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("trips", trips.getContent());
+        response.put("total", tripRepository.countTripsOfToday(startOfDay, endOfDay));
+
+        return ResponseEntity.ok(response);
+    }
+
+    // Yearly
+    @GetMapping("/statement/yearly")
+    public ResponseEntity<Map<String, Object>> getYearlyStatement(
+            @RequestParam(defaultValue = "0") int offset,
+            @RequestParam(defaultValue = "10") int limit) {
+
+
+        LocalDate today = LocalDate.now();
+        LocalDate firstOfYear = today.withDayOfYear(1);
+        LocalDateTime startOfYear = firstOfYear.atStartOfDay();
+
+        LocalDate lastOfYear = today.withDayOfYear(today.lengthOfYear());
+        LocalDateTime endOfYear = lastOfYear.atTime(LocalTime.MAX);
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("totalTrips", tripRepository.countTripsOfToday(startOfYear, endOfYear));
+        response.put("canceledTrips", tripRepository.countCanceledTripsOfDay(startOfYear, endOfYear));
+        response.put("completedTrips", tripRepository.countCompletedTripsOfDay(startOfYear, endOfYear));
+        response.put("revenue", paymentRepository.calculateTotalRevenueOfToday(startOfYear, endOfYear));
+
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/statement/yearly-history")
+    public ResponseEntity<Map<String, Object>> getYearlyHistory(
+            @RequestParam(defaultValue = "0") int offset,
+            @RequestParam(defaultValue = "10") int limit) {
+
+        PageRequest pageRequest = PageRequest.of(offset, limit, Sort.by(Sort.Order.asc("tripId")));
+
+        LocalDate today = LocalDate.now();
+        LocalDate firstDayOfYear = today.withDayOfYear(1); // lấy ngày đầu
+        LocalDateTime startOfYear = firstDayOfYear.atStartOfDay(); // lấy ngày + giờ đầu của năm: 01/01/2023 00:00:00
+
+        LocalDate lastDayOfYear = today.withDayOfYear(today.lengthOfYear()); // lấy ngày cuối năm
+        LocalDateTime endOfYear = lastDayOfYear.atTime(LocalTime.MAX); // lấy ngày + giờ cuối của năm: 31/12/2023 23:59:59
+
+
+        Page<Trip> trips = tripRepository.findTripByCreatedAt(pageRequest, startOfYear, endOfYear);
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("trips", trips.getContent());
+        response.put("total", tripRepository.countTripsOfToday(startOfYear, endOfYear));
+
+        return ResponseEntity.ok(response);
+    }
+
+
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

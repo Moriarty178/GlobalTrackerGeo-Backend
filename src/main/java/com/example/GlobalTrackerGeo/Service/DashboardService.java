@@ -1,9 +1,6 @@
 package com.example.GlobalTrackerGeo.Service;
 
-import com.example.GlobalTrackerGeo.Repository.CustomerRepository;
-import com.example.GlobalTrackerGeo.Repository.DriverRepository;
-import com.example.GlobalTrackerGeo.Repository.PaymentRepository;
-import com.example.GlobalTrackerGeo.Repository.TripRepository;
+import com.example.GlobalTrackerGeo.Repository.*;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -22,6 +19,8 @@ public class DashboardService {
     private PaymentRepository paymentRepository;
     @Autowired
     private TripRepository tripRepository;
+    @Autowired
+    private VehicleRepository vehicleRepository;
 
     @Transactional
     public Map<String, Object> getStats() {
@@ -30,7 +29,7 @@ public class DashboardService {
         // Lấy thông tin tương ứng 6 card trên dashboard
         stats.put("totalRiders", customerRepository.count());// Total customer
         stats.put("totalDrivers", driverRepository.count());// Total driver
-        stats.put("vehicleType", 4);// Total vehicle
+        stats.put("vehicleType", vehicleRepository.count());// Total vehicle
         stats.put("revenue", paymentRepository.calculateTotalRevenue());// Total revenue
         stats.put("totalRides", tripRepository.count());// Total Trips
         stats.put("canceledRides", tripRepository.countCanceledTrips());// Canceled Trips
