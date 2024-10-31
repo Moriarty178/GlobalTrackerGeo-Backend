@@ -787,13 +787,9 @@ public class TripController {
 
         PageRequest pageRequest = PageRequest.of(offset, limit, Sort.by(Sort.Order.asc("tripId")));
 
-        LocalDate today = LocalDate.now();
-        LocalDate firstDayOfYear = today.withDayOfYear(1); // lấy ngày đầu
-        LocalDateTime startOfYear = firstDayOfYear.atStartOfDay(); // lấy ngày + giờ đầu của năm: 01/01/2023 00:00:00
-
-        LocalDate lastDayOfYear = today.withDayOfYear(today.lengthOfYear()); // lấy ngày cuối năm
-        LocalDateTime endOfYear = lastDayOfYear.atTime(LocalTime.MAX); // lấy ngày + giờ cuối của năm: 31/12/2023 23:59:59
-
+       LocalDate today = LocalDate.now();
+       LocalDateTime startOfYear = today.withDayOfYear(1).atStartOfDay();
+       LocalDateTime endOfYear = today.withDayOfYear(today.lengthOfYear()).atTime(LocalTime.MAX);
 
         Page<Trip> trips = tripRepository.findTripByCreatedAt(pageRequest, startOfYear, endOfYear);
 
