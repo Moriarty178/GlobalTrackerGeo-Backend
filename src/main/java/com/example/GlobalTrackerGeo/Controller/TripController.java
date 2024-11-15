@@ -467,6 +467,7 @@ public class TripController {
 
         // Xác định vị trí lưu ảnh
         String imagePath = "D:/GlobalTrackerGeo/images/" + image.getOriginalFilename();
+        //String imagePath2 = "/app/static/images/" + image.getOriginalFilename(); // in docker container
         File imageFile = new File(imagePath); // tạo đối tượng File cho phép lưu nội dung -> vào path
 
         try {
