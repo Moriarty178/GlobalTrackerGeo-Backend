@@ -16,7 +16,6 @@ D:\GlobalTrackerGeo\GlobalTrackerGeo\src\main\java\com\example\GlobalTrackerGeo\
 D:\GlobalTrackerGeo\GlobalTrackerGeo\src\main\java\com\example\GlobalTrackerGeo\Dto\DriverRequest.java
 D:\GlobalTrackerGeo\GlobalTrackerGeo\src\main\java\com\example\GlobalTrackerGeo\Dto\DriverResponse.java
 D:\GlobalTrackerGeo\GlobalTrackerGeo\src\main\java\com\example\GlobalTrackerGeo\Dto\DriverToAdmin.java
-D:\GlobalTrackerGeo\GlobalTrackerGeo\src\main\java\com\example\GlobalTrackerGeo\Dto\FormEditVehicle.java
 D:\GlobalTrackerGeo\GlobalTrackerGeo\src\main\java\com\example\GlobalTrackerGeo\Dto\Location.java
 D:\GlobalTrackerGeo\GlobalTrackerGeo\src\main\java\com\example\GlobalTrackerGeo\Dto\LocationNoName.java
 D:\GlobalTrackerGeo\GlobalTrackerGeo\src\main\java\com\example\GlobalTrackerGeo\Dto\LocationRequest.java
@@ -37,6 +36,7 @@ D:\GlobalTrackerGeo\GlobalTrackerGeo\src\main\java\com\example\GlobalTrackerGeo\
 D:\GlobalTrackerGeo\GlobalTrackerGeo\src\main\java\com\example\GlobalTrackerGeo\Entity\DriverLocation.java
 D:\GlobalTrackerGeo\GlobalTrackerGeo\src\main\java\com\example\GlobalTrackerGeo\Entity\GeoZone.java
 D:\GlobalTrackerGeo\GlobalTrackerGeo\src\main\java\com\example\GlobalTrackerGeo\Entity\MapDriver.java
+D:\GlobalTrackerGeo\GlobalTrackerGeo\src\main\java\com\example\GlobalTrackerGeo\Entity\Notification.java
 D:\GlobalTrackerGeo\GlobalTrackerGeo\src\main\java\com\example\GlobalTrackerGeo\Entity\Payment.java
 D:\GlobalTrackerGeo\GlobalTrackerGeo\src\main\java\com\example\GlobalTrackerGeo\Entity\PromoCode.java
 D:\GlobalTrackerGeo\GlobalTrackerGeo\src\main\java\com\example\GlobalTrackerGeo\Entity\Rating.java
@@ -53,6 +53,7 @@ D:\GlobalTrackerGeo\GlobalTrackerGeo\src\main\java\com\example\GlobalTrackerGeo\
 D:\GlobalTrackerGeo\GlobalTrackerGeo\src\main\java\com\example\GlobalTrackerGeo\Repository\DriverRepository.java
 D:\GlobalTrackerGeo\GlobalTrackerGeo\src\main\java\com\example\GlobalTrackerGeo\Repository\GeoZoneRepository.java
 D:\GlobalTrackerGeo\GlobalTrackerGeo\src\main\java\com\example\GlobalTrackerGeo\Repository\MapRepository.java
+D:\GlobalTrackerGeo\GlobalTrackerGeo\src\main\java\com\example\GlobalTrackerGeo\Repository\NotificationRepository.java
 D:\GlobalTrackerGeo\GlobalTrackerGeo\src\main\java\com\example\GlobalTrackerGeo\Repository\PaymentRepository.java
 D:\GlobalTrackerGeo\GlobalTrackerGeo\src\main\java\com\example\GlobalTrackerGeo\Repository\PromoCodeRepository.java
 D:\GlobalTrackerGeo\GlobalTrackerGeo\src\main\java\com\example\GlobalTrackerGeo\Repository\RatingRepository.java
